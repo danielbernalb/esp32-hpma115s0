@@ -36,6 +36,7 @@
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+//U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0);
 //#elif ESP32Sboard // display via i2c for ESP32S board
 //ESP32Sboard don´t have screen
 #elif HELTEC // display via i2c for Heltec board
@@ -53,8 +54,11 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
 #elif ESP32Sboard
-#define HPMA_RX 27  // config for ESP32S board
-#define HPMA_TX 25
+//#define HPMA_RX 27  // config for ESP32S board
+//#define HPMA_TX 25
+#define HPMA_RX 32  // config for ESP32S board
+#define HPMA_TX 33
+
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
