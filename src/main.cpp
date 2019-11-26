@@ -662,4 +662,11 @@ void loop(){
   gui.pageEnd();
   //delay(400);
   delay(1000);
+
+ if (resetvar == 899) {
+  resetvar = 0;
+  ESP.restart();   // 15 minutos
+  }
+  resetvar = resetvar + 1;
+  
 }

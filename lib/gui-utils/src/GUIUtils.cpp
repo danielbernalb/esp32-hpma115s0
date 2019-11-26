@@ -116,7 +116,7 @@ else if (avarage<56){
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
   u8g2.drawGlyph(76, 12, 0x0032);
   u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(76, 17);
+  u8g2.setCursor(77, 17);
   u8g2.print("UNHEALT S");  
 }
 else if (avarage<151){
@@ -130,7 +130,7 @@ else if (avarage<251){
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
   u8g2.drawGlyph(76, 12, 0x0053);
   u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(76, 17);
+  u8g2.setCursor(77, 17);
   u8g2.print("VERY UNH"); 
 }
 else {
