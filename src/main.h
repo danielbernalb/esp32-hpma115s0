@@ -57,6 +57,8 @@ GUIUtils gui;
 // Watchdog timer
 hw_timer_t *timer = NULL;
 
+unsigned int resetvar = 0;
+
 // some prototypes
 bool wifiCheck();
 void wifiConnect(const char* ssid, const char* pass);

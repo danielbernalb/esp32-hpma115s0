@@ -623,6 +623,14 @@ void bleLoop(){
   }
 }
 
+void resetLoop(){
+  if (resetvar == 899) {
+    resetvar = 0;
+    ESP.restart();   // 15 minutos
+    }
+    resetvar = resetvar + 1;
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -682,4 +690,5 @@ void loop(){
   gui.pageEnd();   // gui changes push
   delay(500);
   timerWrite(timer, 0);  //reset timer (feed watchdog)
+  resetLoop();     // reset every 15 minutes
 }
