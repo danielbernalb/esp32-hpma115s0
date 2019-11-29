@@ -484,7 +484,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   int wifi_retry = 0;
   while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
     Serial.print(".");
-    delay(250);
+    delay(500);
   }
   if(wifiCheck()){
     cfg.isNewWifi=false;  // flag for config via BLE
@@ -683,8 +683,8 @@ void loop(){
   batteryloop();   // battery charge status 
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  influxDbLoop();  // influxDB publication
   apiLoop();       // CanAir.io API publication
+  influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates
   gui.pageEnd();   // gui changes push
