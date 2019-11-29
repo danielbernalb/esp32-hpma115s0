@@ -683,8 +683,8 @@ void loop(){
   batteryloop();   // battery charge status 
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  apiLoop();       // CanAir.io API publication
   influxDbLoop();  // influxDB publication
+  apiLoop();       // CanAir.io API publication
   statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates
   gui.pageEnd();   // gui changes push
