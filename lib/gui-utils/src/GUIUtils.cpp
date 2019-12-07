@@ -99,11 +99,29 @@ void GUIUtils::displaySensorAvarage(int avarage) {
   displayCenterBig(output);
 
 if (avarage<13){
+  
+   /* Para el TTGO_TQ
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
   u8g2.drawGlyph(76, 12, 0x0024);
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.setCursor(77, 16);
   u8g2.print("GOOD");
+   */ 
+  
+   /*
+
+  
+  u8g2.setFont(u8g2_font_emoticons21_tr);
+  u8g2.drawGlyph(0, 0, 0x0020);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.setCursor(77, 18);
+  u8g2.print("GOOD");
+   */
+
+u8g2.drawXBM( 0, 0, 32, 32, Smileface21); 
+u8g2.drawXBM( 32, 0, 32, 32, Smileface22);
+delay(1000);
+
 }
 else if (avarage<36){
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
@@ -111,6 +129,10 @@ else if (avarage<36){
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(77, 17);
   u8g2.print("MODERATE");
+
+u8g2.drawXBM( 0, 0, 32, 32, Smileface23); 
+u8g2.drawXBM( 32, 0, 32, 32, Smileface24);
+
 }
 else if (avarage<56){
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
