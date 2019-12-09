@@ -15,6 +15,8 @@ public:
 
   unsigned int mcount, ecode = 0;
 
+  unsigned int var1;
+
   int lastDrawedLine = 0;
 
   unsigned int inthumi, inttemp = 0;
