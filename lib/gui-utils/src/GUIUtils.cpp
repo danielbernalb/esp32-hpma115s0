@@ -69,8 +69,9 @@ void GUIUtils::displayCenterBig(String msg) {
 #else
   //u8g2.setCursor(0,0);
   //u8g2.setFont(u8g2_font_inb24_mn);
-  u8g2.setCursor(37,8);
-  u8g2.setFont(u8g2_font_9x15B_tf);
+  u8g2.setCursor(36,10); //(36,8)
+  //u8g2.setFont(u8g2_font_9x18B_tf);
+  u8g2.setFont(u8g2_font_9x18B_tf);
 #endif
   u8g2.print(msg.c_str());
 }
@@ -110,9 +111,9 @@ if (avarage<13){   //13
   u8g2.print("GOOD");
    */ 
  
-  u8g2.drawXBM( 0, 0, 32, 32, Smileface1);
-  u8g2.setFont(u8g2_font_7x13_tf);
-  u8g2.setCursor(30, 26);
+  u8g2.drawXBM( 0, 1, 32, 32, Smileface1);
+  u8g2.setFont(u8g2_font_6x12_tf);
+  u8g2.setCursor(35, 26);
   u8g2.print("BUENO");
 }
 else if (avarage<36){
@@ -123,35 +124,36 @@ else if (avarage<36){
   u8g2.setCursor(77, 17);
   u8g2.print("MODERATE");
   */
-  u8g2.drawXBM( 0, 0, 32, 32, Smileface2);
+  u8g2.drawXBM( 0, 1, 32, 32, Smileface2);
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.setCursor(25, 29);
   u8g2.print("MODERADO");
 
 }
 else if (avarage<56){
-  u8g2.drawXBM( 0, 0, 32, 32, Smileface3);
+  u8g2.drawXBM( 0, 1, 32, 32, Smileface3);
   u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.setCursor(29, 29);
+  u8g2.setCursor(30, 29);
   u8g2.print("REGULAR");
 }
 else if (avarage<151){
-  u8g2.drawXBM( 0, 0, 32, 32, Smileface4);
+  u8g2.drawXBM( 0, 1, 32, 32, Smileface4);
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setCursor(29, 28);
-  u8g2.print("DAnINO");
+  u8g2.print("DA INO");
+  u8g2.drawGlyph(41, 28, 0x00d1);
 }
 else if (avarage<251){
-  u8g2.drawXBM( 0, 0, 32, 32, Smileface5);
+  u8g2.drawXBM( 0, 1, 32, 32, Smileface5);
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(25, 30);
-  u8g2.print("MUY DAnINO");
+  u8g2.print("MUY DANINO");
 }
 else {
-  u8g2.drawXBM( 0, 0, 32, 32, Smileface6);
+  u8g2.drawXBM( 0, 1, 32, 32, Smileface6);
   u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.setCursor(25, 29);
-  u8g2.print("PELIGROSO");
+  u8g2.setCursor(30, 29);
+  u8g2.print("PELIGRO");
 }  
 //////////////
 
@@ -195,11 +197,9 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
    //  u8g2.print(chargeLevel);
   }
   if(chargeLevel>24){
-     //u8g2.drawBox(120,11,5,9);
      u8g2.drawBox(120,2,5,9);
   }
   if(chargeLevel>49){
-     //u8g2.drawBox(114,11,5,9);
      u8g2.drawBox(114,2,5,9);
   }
   if(chargeLevel>74){
@@ -214,6 +214,13 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   Serial.print(chargeLevel); Serial.println("%");
 #else
   Serial.print(" PM2.5:"); Serial.println(output);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  //u8g2.setFont(u8g2_font_micro_tn);
+  u8g2.setCursor(51, 0);
+  sprintf(output, "%03d", pm25);
+  u8g2.print(output);
+
+
 #endif  
   //displayEndLine(String(output));
 }
