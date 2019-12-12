@@ -36,7 +36,6 @@
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-//U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0);
 //#elif ESP32Sboard // display via i2c for ESP32S board
 //ESP32Sboard don´t have screen
 #elif HELTEC // display via i2c for Heltec board
@@ -54,11 +53,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
 #elif ESP32Sboard
-//#define HPMA_RX 27  // config for ESP32S board
-//#define HPMA_TX 25
-#define HPMA_RX 32  // config for ESP32S board
-#define HPMA_TX 33
-
+#define HPMA_RX 27  // config for ESP32S board
+#define HPMA_TX 25
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
@@ -104,11 +100,11 @@ void wrongDataState(){
   Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
-  #ifdef TTGO_TQ
-  gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
-  #else
-  gui.displaySensorData(0,0,0.0,0.0);
-  #endif
+  //#ifdef TTGO_TQ
+   gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
+  //#else
+   //gui.displaySensorData(0,0,0.0,0.0);
+  //#endif
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -152,35 +148,35 @@ char getLoaderChar(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
-  Serial.print("-->[HPMA] read..");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
-      Serial.print(".");
+      Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
     }
+    Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("fail"); 
+    Serial.println("-->[HPMA] read > fail!");
     Serial.println("-->[E][HPMA] disconnected ?"); 
-    delay(3000);  // waiting for sensor..
+    delay(500);  // waiting for sensor..
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
-      Serial.print("done");
+      Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        #ifdef TTGO_TQ
-        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
-        #else
-        gui.displaySensorData(pm25,pm10,humi,temp);
-        #endif
+        //#ifdef TTGO_TQ
+          gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
+        //#else
+          //gui.displaySensorData(pm25,pm10,humi,temp);
+        //#endif
         gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);
       }
@@ -276,6 +272,7 @@ void batteryloop() {
   if (Rdelay > 52)
   {
     chargeLevel = 0; // 0%
+    Serial.println("Charge level 0%");
     return;
   }
   delayMicroseconds(1600);
@@ -284,7 +281,8 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_2) == HIGH)
     {
-      chargeLevel = 100; // 100%
+      chargeLevel = 4; // 100%
+      Serial.println("Charge level 100%");
       return;
     }
   }
@@ -293,7 +291,8 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_3) == LOW)
     {
-      chargeLevel = 25; // 25%
+      chargeLevel = 1; // 25%
+      Serial.println("Charge level 25%");
       return;
     }
   }
@@ -303,13 +302,15 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_3) == HIGH)
     {
-      chargeLevel = 75; // 75%
+      chargeLevel = 3; // 75%
+      Serial.println("Charge level 75%");
       return;
     }
   }
   if (digitalRead(IP5306_3) == LOW)
   {
-    chargeLevel = 50; // 50%
+    chargeLevel = 2; // 50%
+    Serial.println("Charge level 50%");
     return;
   }
 #endif
@@ -453,7 +454,9 @@ class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
 };
 
 void otaLoop(){
+  timerAlarmDisable(timer);                         // disable interrupt
   if(wifiOn)ota.loop();
+  timerAlarmEnable(timer);                         // enable interrupt
 }
 
 void otaInit(){
@@ -477,7 +480,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   int wifi_retry = 0;
   while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
     Serial.print(".");
-    delay(250);
+    delay(500);
   }
   if(wifiCheck()){
     cfg.isNewWifi=false;  // flag for config via BLE
@@ -616,9 +619,29 @@ void bleLoop(){
   }
 }
 
+void resetLoop(){
+  if (resetvar == 899) {
+    resetvar = 0;
+    ESP.restart();   // 15 minutos
+    }
+    resetvar = resetvar + 1;
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
+
+void IRAM_ATTR resetModule(){
+  Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
+  ESP.restart();
+}
+
+void enableWatchdog(){
+  timer = timerBegin(0, 80, true);                 // timer 0, div 80
+  timerAttachInterrupt(timer, &resetModule, true); // setting callback
+  timerAlarmWrite(timer, 15000000, false);         // set time in us (15s)
+  timerAlarmEnable(timer);                         // enable interrupt
+}
 
 void setup() {
 #ifdef TTGO_TQ
@@ -644,6 +667,7 @@ void setup() {
   apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
+  enableWatchdog();  // enable timer for reboot in any loop blocker
   delay(500);
 }
 
@@ -655,18 +679,12 @@ void loop(){
   batteryloop();   // battery charge status 
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  apiLoop();
+  apiLoop();       // CanAir.io API publication
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
-  otaLoop();
-  gui.pageEnd();
-  //delay(400);
-  delay(1000);
-
- if (resetvar == 899) {
-  resetvar = 0;
-  ESP.restart();   // 15 minutos
-  }
-  resetvar = resetvar + 1;
-  
+  otaLoop();       // check for firmware updates
+  gui.pageEnd();   // gui changes push
+  delay(500);
+  timerWrite(timer, 0);  //reset timer (feed watchdog)
+  //resetLoop();     // reset every 15 minutes for static sensor
 }

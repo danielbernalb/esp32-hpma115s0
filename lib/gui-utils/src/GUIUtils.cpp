@@ -67,11 +67,14 @@ void GUIUtils::displayCenterBig(String msg) {
   u8g2.setCursor(0,1);
   u8g2.setFont(u8g2_font_inb30_mn);
 #else
-  //u8g2.setCursor(0,0);
-  //u8g2.setFont(u8g2_font_inb24_mn);
-  u8g2.setCursor(36,10); //(36,8)
-  //u8g2.setFont(u8g2_font_9x18B_tf);
-  u8g2.setFont(u8g2_font_9x18B_tf);
+  if (optionvis == 0) {
+   u8g2.setCursor(0,0);
+   u8g2.setFont(u8g2_font_inb24_mn);
+  }
+  else {
+   u8g2.setCursor(36,10); //(36,8)
+   u8g2.setFont(u8g2_font_9x18B_tf);
+  }
 #endif
   u8g2.print(msg.c_str());
 }
@@ -79,7 +82,8 @@ void GUIUtils::displayCenterBig(String msg) {
 void GUIUtils::displayBottomLine(String msg) {
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
-  u8g2.setCursor(115,16);   ////
+  //u8g2.setCursor(97,5); //Original
+  u8g2.setCursor(115,16); //emoticon2
 #else
   u8g2.setCursor(0,29);
 #endif
@@ -100,9 +104,8 @@ void GUIUtils::displaySensorAvarage(int avarage) {
   char output[4];
   sprintf(output, "%03d", avarage);
   displayCenterBig(output);
-
-if (avarage<13){   //13
-  
+if (optionvis == 1) {
+ if (avarage<13){   //13
    /* Para el TTGO_TQ
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
   u8g2.drawGlyph(76, 12, 0x0024);
@@ -110,13 +113,13 @@ if (avarage<13){   //13
   u8g2.setCursor(77, 16);
   u8g2.print("GOOD");
    */ 
- 
+
   u8g2.drawXBM( 0, 1, 32, 32, Smileface1);
   u8g2.setFont(u8g2_font_6x12_tf);
   u8g2.setCursor(35, 26);
   u8g2.print("BUENO");
-}
-else if (avarage<36){
+  }
+ else if (avarage<36){
   /*
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
   u8g2.drawGlyph(76, 12, 0x0062);
@@ -128,39 +131,37 @@ else if (avarage<36){
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.setCursor(25, 29);
   u8g2.print("MODERADO");
-
-}
-else if (avarage<56){
+  }
+ else if (avarage<56){
   u8g2.drawXBM( 0, 1, 32, 32, Smileface3);
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.setCursor(30, 29);
   u8g2.print("REGULAR");
-}
-else if (avarage<151){
+  }
+ else if (avarage<151){
   u8g2.drawXBM( 0, 1, 32, 32, Smileface4);
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setCursor(29, 28);
   u8g2.print("DA INO");
   u8g2.drawGlyph(41, 28, 0x00d1);
-}
-else if (avarage<251){
+  }
+ else if (avarage<251){
   u8g2.drawXBM( 0, 1, 32, 32, Smileface5);
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(25, 30);
   u8g2.print("MUY DANINO");
-}
-else {
+  }
+ else {
   u8g2.drawXBM( 0, 1, 32, 32, Smileface6);
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.setCursor(30, 29);
   u8g2.print("PELIGRO");
-}  
-//////////////
-
+  }  
 }
+  else {
+   delay(1);
+  }
 
-void GUIUtils::displaySensorData(int pm25, int pm10, float humi, float temp) {
-  displaySensorData(pm25,pm10,0,humi,temp);
 }
 
 // TODO: separate this function, format/display
@@ -170,22 +171,11 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   char output[22];
   inthumi = int(humi);
   inttemp = int(temp);
-  sprintf(output, "%03d E%02d H%02d%% T%02d%°C" , pm25, ecode, inthumi, inttemp);    // 000 E00 H00% T00°C
-  //displayBottomLine(String(output));  ///////////////////
+  sprintf(output, "%03d E%02d H%02d%% T%02d" , pm25, ecode, inthumi, inttemp);    // 000 E00 H00% T00°C
+  if (optionvis == 0) {
+   displayBottomLine(String(output));
+   }
 #ifdef TTGO_TQ
-  u8g2.setFont(u8g2_font_4x6_tf);
- // u8g2.drawStr(112, 15, "T");   //Optional temperature
- // u8g2.setCursor(116, 15);
- // u8g2.print(u8x8_u8toa(inttemp, 2));
- // u8g2.drawStr(124, 15, "C");
-
-//  u8g2.drawFrame(100,9,27,13);
-//  u8g2.drawBox(97,13,3,5);
-//  u8g2.setDrawColor(0);
-//  u8g2.drawBox(102,11,24,9);
-//  u8g2.setDrawColor(1);
-//  u8g2.drawStr(89, 12, "%");
-
   u8g2.drawFrame(100,0,27,13);
   u8g2.drawBox(97,4,3,5);
   u8g2.setDrawColor(0);
@@ -195,32 +185,31 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   if(chargeLevel<80){
      u8g2.setCursor(80, 12);
    //  u8g2.print(chargeLevel);
-  }
+   }
   if(chargeLevel>24){
      u8g2.drawBox(120,2,5,9);
-  }
+   }
   if(chargeLevel>49){
      u8g2.drawBox(114,2,5,9);
-  }
+   }
   if(chargeLevel>74){
      u8g2.drawBox(108,2,5,9);
-  }
+   }
   if(chargeLevel>99){
      u8g2.drawBox(102,2,5,9);
      u8g2.setCursor(76, 12);
      //u8g2.print(chargeLevel);  
-  }
+   }
   Serial.print(" PM2.5:"); Serial.print(output); Serial.print (" Battery:");
   Serial.print(chargeLevel); Serial.println("%");
 #else
   Serial.print(" PM2.5:"); Serial.println(output);
+if (optionvis == 1) {
   u8g2.setFont(u8g2_font_4x6_tf);
-  //u8g2.setFont(u8g2_font_micro_tn);
   u8g2.setCursor(51, 0);
   sprintf(output, "%03d", pm25);
   u8g2.print(output);
-
-
+ }
 #endif  
   //displayEndLine(String(output));
 }
