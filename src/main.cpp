@@ -56,7 +56,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 27  // config for ESP32S board
 #define HPMA_TX 25
 #elif HELTEC
-#define HPMA_RX 13  // config for Heltec board
+#define HPMA_RX 13  // config for Heltec board, ESP32S & ESPDUINO-32
 #define HPMA_TX 12
 #elif TTGO18650
 #define HPMA_RX 18  // config for TTGO18650 board
