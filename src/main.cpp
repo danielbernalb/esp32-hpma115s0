@@ -692,5 +692,5 @@ void loop(){
   gui.pageEnd();   // gui changes push
   delay(500);
   timerWrite(timer, 0);  //reset timer (feed watchdog)
-  resetLoop();     // reset every 15 minutes
+//  resetLoop();     // reset every 15 minutes
 }
