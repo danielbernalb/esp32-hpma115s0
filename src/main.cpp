@@ -616,7 +616,7 @@ void bleLoop(){
 }
 
 void resetLoop(){
-  if (resetvar == 899) {
+  if (resetvar == 1799) {
     resetvar = 0;
     delay(30000);   // 30 seconds, reset at 15 seconds
     }
