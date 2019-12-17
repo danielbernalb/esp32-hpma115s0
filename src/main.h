@@ -21,7 +21,6 @@ const int IP5306_2 = 27;     // PIN2 IP5306
 const int IP5306_3 = 14;     // PIN3 IP5306
 unsigned int chargeLevel = 0;
 unsigned int Rdelay = 0;
-unsigned int resetvar = 0;
 #endif
 
 // WiFi fields
@@ -56,6 +55,7 @@ GUIUtils gui;
 
 // Watchdog timer
 hw_timer_t *timer = NULL;
+unsigned int resetvar = 0;
 
 // some prototypes
 bool wifiCheck();

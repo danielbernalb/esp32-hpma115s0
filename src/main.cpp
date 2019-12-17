@@ -615,6 +615,14 @@ void bleLoop(){
   }
 }
 
+void resetLoop(){
+  if (resetvar == 899) {
+    resetvar = 0;
+    delay(30000);   // 30 seconds, reset at 15 seconds
+    }
+    resetvar = resetvar + 1;
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -680,4 +688,5 @@ void loop(){
   gui.pageEnd();   // gui changes push
   delay(500);
   timerWrite(timer, 0);  //reset timer (feed watchdog)
+  resetLoop();     // reset every 15 minutes
 }
