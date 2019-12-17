@@ -21,6 +21,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
@@ -620,6 +621,12 @@ void bleLoop(){
 
 void IRAM_ATTR resetModule(){
   Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
+  esp_wifi_disconnect();
+  delay(200);
+  esp_wifi_stop();
+  delay(200);
+  esp_wifi_deinit();
+  delay(200);
   ESP.restart();
 }
 
