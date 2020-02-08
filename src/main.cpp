@@ -83,7 +83,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
  */
 void sensorConfig(){
   Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
-  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
+  hpmaSerial.begin(9600,SERIAL_8O1,HPMA_RX,HPMA_TX);
   hpma115S0.Init();
   delay(100);
   hpma115S0.EnableAutoSend();
@@ -96,7 +96,7 @@ void sensorConfig(){
 void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   delay(100);
-  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
+  hpmaSerial.begin(9600,SERIAL_8O1,HPMA_RX,HPMA_TX);
   delay(100);
 }
 
@@ -109,9 +109,9 @@ void wrongDataState(){
   #else
   gui.displaySensorData(0,0,0.0,0.0);
   #endif
-  hpmaSerial.end();
-  statusOff(bit_sensor);
-  sensorInit();
+ // hpmaSerial.end();
+ // statusOff(bit_sensor);
+ // sensorInit();
   delay(500);
 }
 
@@ -168,12 +168,13 @@ void sensorLoop(){
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(3000);  // waiting for sensor..
   }
-  if (txtMsg[0] == 66) {
-    if (txtMsg[1] == 77) {
+
+  if (txtMsg[0] == 02) {
+//    if (txtMsg[1] == 77) {
       Serial.print("done");
       statusOn(bit_sensor);
-      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
+      unsigned int pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         #ifdef TTGO_TQ
@@ -187,8 +188,8 @@ void sensorLoop(){
       else wrongDataState();
     }
     else wrongDataState();
-  }
-  else wrongDataState();
+//  }
+//  else wrongDataState();
 }
 
 void statusLoop(){
@@ -632,6 +633,7 @@ void setup() {
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
+  delay(1000);
   sensorInit();
   am2320.begin();
   bleServerInit();
@@ -663,10 +665,10 @@ void loop(){
   //delay(400);
   delay(1000);
 
- if (resetvar == 899) {
-  resetvar = 0;
-  ESP.restart();   // 15 minutos
-  }
-  resetvar = resetvar + 1;
+//if (resetvar == 899) {
+// resetvar = 0;
+//  ESP.restart();   // 15 minutos
+//  }
+//  resetvar = resetvar + 1;
   
 }
