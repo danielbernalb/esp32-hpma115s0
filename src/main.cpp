@@ -161,10 +161,6 @@ void sensorLoop(){
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
-
-  //
-  Serial.println("Trama"+String(txtMsg));
-  //
   if (txtMsg[0] == 170) {
     if (txtMsg[1] == 192) {
       Serial.print("-->[HPMA] read > done!");
