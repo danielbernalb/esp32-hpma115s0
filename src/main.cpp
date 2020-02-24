@@ -161,12 +161,16 @@ void sensorLoop(){
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
-  if (txtMsg[0] == 66) {
-    if (txtMsg[1] == 77) {
+
+  //
+  Serial.println("Trama"+String(txtMsg));
+  //
+  if (txtMsg[0] == 170) {
+    if (txtMsg[1] == 192) {
       Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
-      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      unsigned int pm25 = txtMsg[3] * 256 + byte(txtMsg[2]);
+      unsigned int pm10 = txtMsg[5] * 256 + byte(txtMsg[4]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         #ifdef TTGO_TQ
