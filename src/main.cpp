@@ -147,7 +147,7 @@ char getLoaderChar(){
 void sensorLoop(){
   int try_sensor_read = 0;
   String txtMsg = "";
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
+  while (txtMsg.length() < 10 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
@@ -169,8 +169,8 @@ void sensorLoop(){
     if (txtMsg[1] == 192) {
       Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
-      unsigned int pm25 = txtMsg[3] * 256 + byte(txtMsg[2]);
-      unsigned int pm10 = txtMsg[5] * 256 + byte(txtMsg[4]);
+      unsigned int pm25 = (txtMsg[3] * 256 + byte(txtMsg[2]))/10;
+      unsigned int pm10 = (txtMsg[5] * 256 + byte(txtMsg[4]))/10;
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         #ifdef TTGO_TQ
