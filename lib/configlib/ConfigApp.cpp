@@ -14,11 +14,11 @@ void ConfigApp::init(const char app_name[]){
 void ConfigApp::reload(){
   preferences.begin(_app_name,false);
   // device name or station name
-  dname = preferences.getString("dname","");
+  dname = preferences.getString("dname","PM2.5_pruebasultimas");
   // wifi settings
-  wifiEnable = preferences.getBool("wifiEnable",false);
-  ssid = preferences.getString("ssid","");
-  pass = preferences.getString("pass","");
+  wifiEnable = preferences.getBool("wifiEnable",true);
+  ssid = preferences.getString("ssid","TPred");
+  pass = preferences.getString("pass","apt413sago16");
   // influx db optional settings
   ifxEnable = preferences.getBool("ifxEnable",false);
   ifxdb = preferences.getString("ifxdb","");
@@ -28,10 +28,10 @@ void ConfigApp::reload(){
   ifusr = preferences.getString("ifusr","");
   ifpss = preferences.getString("ifpss","");
   // canairio api settings
-  apiEnable = preferences.getBool("apiEnable",false);
-  apiusr = preferences.getString("apiusr","");
-  apipss = preferences.getString("apipss","");
-  apisrv = preferences.getString("apisrv","");
+  apiEnable = preferences.getBool("apiEnable",true);
+  apiusr = preferences.getString("apiusr","danielbernalb");
+  apipss = preferences.getString("apipss","danielchangeme");
+  apisrv = preferences.getString("apisrv","api.canair.io");
   apiuri = preferences.getString("apiuri","");
   apiprt = preferences.getInt("apiprt",80);
   // station and sensor settings
@@ -39,7 +39,7 @@ void ConfigApp::reload(){
   lon   = preferences.getDouble("lon",0);
   alt = preferences.getFloat("alt",0);
   spd = preferences.getFloat("spd",0);
-  stime = preferences.getInt("stime",5);
+  stime = preferences.getInt("stime",15);
 
   preferences.end();
 }
