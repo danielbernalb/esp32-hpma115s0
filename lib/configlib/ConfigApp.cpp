@@ -14,7 +14,7 @@ void ConfigApp::init(const char app_name[]){
 void ConfigApp::reload(){
   preferences.begin(_app_name,false);
   // device name or station name
-  dname = preferences.getString("dname","PM2.5_pruebasultimas");
+  dname = preferences.getString("dname","PMpruebasfinalcredenciales");
   // wifi settings
   wifiEnable = preferences.getBool("wifiEnable",true);
   ssid = preferences.getString("ssid","TPred");
@@ -32,14 +32,14 @@ void ConfigApp::reload(){
   apiusr = preferences.getString("apiusr","danielbernalb");
   apipss = preferences.getString("apipss","danielchangeme");
   apisrv = preferences.getString("apisrv","api.canair.io");
-  apiuri = preferences.getString("apiuri","");
+  apiuri = preferences.getString("apiuri","points/save/");
   apiprt = preferences.getInt("apiprt",80);
   // station and sensor settings
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
   alt = preferences.getFloat("alt",0);
   spd = preferences.getFloat("spd",0);
-  stime = preferences.getInt("stime",15);
+  stime = preferences.getInt("stime",10);
 
   preferences.end();
 }
