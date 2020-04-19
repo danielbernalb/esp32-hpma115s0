@@ -145,16 +145,15 @@ char getLoaderChar(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
-  Serial.print("-->[HPMA] read");
+  Serial.print("-->[HPMA] read..");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
+      Serial.print(".");
     }
-    //Serial.print(".............");
-    Serial.print(".");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
