@@ -39,7 +39,7 @@ void ConfigApp::reload(){
   lon   = preferences.getDouble("lon",0);
   alt = preferences.getFloat("alt",0);
   spd = preferences.getFloat("spd",0);
-  stime = preferences.getInt("stime",10);
+  stime = preferences.getInt("stime",60);
 
   preferences.end();
 }
