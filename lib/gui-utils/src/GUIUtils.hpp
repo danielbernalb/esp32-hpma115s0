@@ -21,6 +21,8 @@ public:
   unsigned int inttemp = 0;
 
   unsigned int numsmile = 0;
+  unsigned int cursor = 0;
+  String color = "";
 
   U8G2 u8g2;
 
@@ -47,6 +49,10 @@ public:
   void displayEndLine(String msg);
 
   void displayEmoticonLabel(int numsmile, String msg);
+
+  void displayBigEmoticon(String msg);
+
+  void displayBigLabel(int cursor, String msg);
 
   void displaySensorAvarage(int avarage);
 
