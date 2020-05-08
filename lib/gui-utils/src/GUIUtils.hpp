@@ -22,7 +22,6 @@ public:
 
   unsigned int numsmile = 0;
   unsigned int cursor = 0;
-  String color = "";
 
   U8G2 u8g2;
 
