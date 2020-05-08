@@ -97,10 +97,14 @@ void GUIUtils::displayBottomLine(String msg)
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
   u8g2.setCursor(115, 16);
-#else
-  u8g2.setCursor(0, 29);
-#endif
   u8g2.print(msg.c_str());
+#else
+#ifndef EMOTICONS
+  u8g2.setCursor(0, 29);
+  u8g2.print(msg.c_str());
+#endif
+#endif
+  
 }
 
 void GUIUtils::displayEndLine(String msg)
