@@ -149,7 +149,7 @@ void GUIUtils::displayBigLabel(int cursor, String msg)
   u8g2.print(msg);
 #else
   u8g2.setFont(u8g2_font_4x6_tf); 
-  u8g2.setCursor(36, 20);
+  u8g2.setCursor(35, 20);
   u8g2.print(msg);
 #endif                //4 8 7 6 7 6
 #endif
@@ -229,7 +229,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     displayBigLabel(84, "/red"); //OK
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
-    displayBigEmoticon("UNHEAL");
+    displayBigEmoticon("UNHEALT");
     displayBigLabel(0, "  red");
 #endif
   }
