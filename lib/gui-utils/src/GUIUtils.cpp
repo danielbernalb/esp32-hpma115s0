@@ -81,11 +81,11 @@ void GUIUtils::displayCenterBig(String msg)
   u8g2.print(msg.c_str());
 #else
 #ifdef TTGO_TQ
-  u8g2.setCursor(50, 01); //(36,8)
+  u8g2.setCursor(50, 01);
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #else
-  u8g2.setCursor(46, 01); //(36,8)
+  u8g2.setCursor(36, 6);
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #endif
@@ -98,8 +98,6 @@ void GUIUtils::displayBottomLine(String msg)
 #ifdef TTGO_TQ
 #ifndef EMOTICONS
   u8g2.setCursor(115, 16);
-#else
-  u8g2.setCursor(115, 16); //Falta nueva visualizacion para Vis1 TTGO!!!!!!!!!
 #endif
 #else
   u8g2.setCursor(0, 29);
@@ -119,7 +117,6 @@ void GUIUtils::displayEndLine(String msg)
 }
 
 void GUIUtils::displayEmoticonLabel(int numsmile, String msg)
-//displayEmoticonLabel(0x0024,"GOOD");
 {
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
   u8g2.drawGlyph(76, 12, numsmile);
@@ -136,9 +133,8 @@ void GUIUtils::displayBigEmoticon(String msg)
   u8g2.setCursor(40, 15);
   u8g2.print(msg);
 #else
-  u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
   u8g2.setFont(u8g2_font_5x7_tf); //5x7 5x7 6x10 4x6 5x7
-  u8g2.setCursor(27, 29);         //(25, 29); (30 , 29); (29, 28); (25, 30); (30 , 29)
+  u8g2.setCursor(29, 28);         //(35, 26);; (25, 29); (30, 29); (29, 28); (25, 30)(30, 29)
   u8g2.print(msg);                //4 8 7 6 7 6
 #endif
 #endif
@@ -147,9 +143,15 @@ void GUIUtils::displayBigEmoticon(String msg)
 void GUIUtils::displayBigLabel(int cursor, String msg)
 {
 #ifdef EMOTICONS
+#ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_5x7_tf); //5x7 5x7 6x10 4x6 5x7
   u8g2.setCursor(cursor, 16);     //70 94 88 82 90 90
-  u8g2.print(msg);                //4 8 7 6 7 6
+  u8g2.print(msg);
+#else
+  u8g2.setFont(u8g2_font_4x6_tf); 
+  u8g2.setCursor(36, 20);
+  u8g2.print(msg);
+#endif                //4 8 7 6 7 6
 #endif
 }
 
@@ -181,30 +183,30 @@ void GUIUtils::displaySensorAvarage(int avarage)
   {
     displayEmoticonLabel(0x0057, "HAZARDOUS");
   }
-#else
-  delay(1);
 #endif
 #else
   if (avarage < 13)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
-    displayBigEmoticon("GOOD"); //OK
+    displayBigEmoticon("GOOD");
     displayBigLabel(66, "/green");
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
-    displayBigEmoticon("GOOD");
+    displayBigEmoticon("  GOOD");
+    displayBigLabel(0, " green");
 #endif
   }
   else if (avarage < 36)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
-    displayBigEmoticon("MODERATE"); //OK
+    displayBigEmoticon("MODERATE");
     displayBigLabel(90, "/yel");
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
     displayBigEmoticon("MODERATE");
+    displayBigLabel(0, "yellow");
 #endif
   }
   else if (avarage < 56)
@@ -216,6 +218,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
     displayBigEmoticon("UNH SEN");
+    displayBigLabel(0, "orange");
 #endif
   }
   else if (avarage < 151)
@@ -227,6 +230,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
     displayBigEmoticon("UNHEAL");
+    displayBigLabel(0, "  red");
 #endif
   }
   else if (avarage < 251)
@@ -238,6 +242,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
     displayBigEmoticon("V UNHEA");
+    displayBigLabel(0, "violet");
 #endif
   }
   else
@@ -249,6 +254,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
     displayBigEmoticon("HAZARD");
+    displayBigLabel(0, " brown");
 #endif
   }
 #endif
@@ -268,9 +274,9 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   inthumi = (int)humi;
   inttemp = (int)temp;
   sprintf(output, "%03d E%02d H%02d%% T%02d%°C", pm25, ecode, inthumi, inttemp); // 000 E00 H00% T00°C
-//#ifndef EMOTICONS
+#ifndef EMOTICONS
   displayBottomLine(String(output));
-///#endif
+#endif
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.drawFrame(100, 0, 27, 13);
@@ -315,7 +321,6 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   u8g2.print(output);
 #endif
 #endif
-  //displayEndLine(String(output));
 }
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
