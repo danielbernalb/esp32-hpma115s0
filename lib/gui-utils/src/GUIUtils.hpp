@@ -54,7 +54,7 @@ public:
 
   void displayBigLabel(int cursor, String msg);
 
-  void displaySensorAvarage(int avarage);
+  void displaySensorAverage(int average);
 
   void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp);
 

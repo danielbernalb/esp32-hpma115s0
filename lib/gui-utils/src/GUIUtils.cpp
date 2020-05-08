@@ -155,27 +155,27 @@ void GUIUtils::displayBigLabel(int cursor, String msg)
 #endif
 }
 
-void GUIUtils::displaySensorAvarage(int avarage)
+void GUIUtils::displaySensorAverage(int average)
 {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
-  if (avarage < 13)
+  if (average < 13)
   {
     displayEmoticonLabel(0x0024, "GOOD");
   }
-  else if (avarage < 36)
+  else if (average < 36)
   {
     displayEmoticonLabel(0x0062, "MODERATE");
   }
-  else if (avarage < 56)
+  else if (average < 56)
   {
     displayEmoticonLabel(0x0032, "UNH SEN G");
   }
-  else if (avarage < 151)
+  else if (average < 151)
   {
     displayEmoticonLabel(0x0051, "UNHEALTY");
   }
-  else if (avarage < 251)
+  else if (average < 251)
   {
     displayEmoticonLabel(0x0053, "VERY UNH");
   }
@@ -185,7 +185,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
   }
 #endif
 #else
-  if (avarage < 13)
+  if (average < 13)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
@@ -197,7 +197,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     displayBigLabel(0, " green");
 #endif
   }
-  else if (avarage < 36)
+  else if (average < 36)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
@@ -209,7 +209,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     displayBigLabel(0, "yellow");
 #endif
   }
-  else if (avarage < 56)
+  else if (average < 56)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
@@ -221,7 +221,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     displayBigLabel(0, "orange");
 #endif
   }
-  else if (avarage < 151)
+  else if (average < 151)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
@@ -233,7 +233,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     displayBigLabel(0, "  red");
 #endif
   }
-  else if (avarage < 251)
+  else if (average < 251)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
@@ -259,7 +259,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
   }
 #endif
   char output[4];
-  sprintf(output, "%03d", avarage);
+  sprintf(output, "%03d", average);
   displayCenterBig(output);
 }
 
