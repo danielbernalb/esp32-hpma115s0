@@ -116,10 +116,10 @@ void GUIUtils::displayEndLine(String msg)
   u8g2.print(msg.c_str());
 }
 
-void GUIUtils::displayEmoticonLabel(int numsmile, String msg)
+void GUIUtils::displayEmoticonLabel(int cursor, String msg)
 {
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, numsmile);
+  u8g2.drawGlyph(76, 12, cursor);
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(77, 17);
   u8g2.print(msg);
