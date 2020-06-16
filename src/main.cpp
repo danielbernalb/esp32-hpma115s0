@@ -62,45 +62,9 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 #endif
 
-SPS30 sps30;
-
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
-
-#ifdef SENSIRION
-/*
- *  @brief : display error message
- *  @param mess : message to display
- *  @param r : error code
- *
- */
-void ErrtoMess(char *mess, uint8_t r)
-{
-  char buf[80];
-
-  Serial.print(mess);
-
-  sps30.GetErrDescription(r, buf, 80);
-  Serial.println(buf);
-}
-/*
- *  @brief : continued loop after fatal error
- *  @param mess : message to display
- *  @param r : error code
- *
- *  if r is zero, it will only display the message
- */
-void Errorloop(char *mess, uint8_t r)
-{
-  if (r) ErrtoMess(mess, r);
-  else Serial.println(mess);
-  Serial.println(F("Program on hold"));
-  //for(;;) delay(100000);
-  for(;;) delay(500);
-}
-#endif
-
 
 /**
  * [DEPRECATED] sensorConfig:
@@ -130,30 +94,23 @@ void sensorInit(){
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
   delay(100);
   #else
-  Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-  // Begin communication channel;
-  if (sps30.begin(SP30_COMMS) == false) {
-    Errorloop((char *) "-->[E][SPS30] could not initialize communication channel.", 0);
+  sensirion_i2c_init();
+  while (sps30_probe() != 0) {
+    Serial.print("SPS sensor probing failed\n");
+    delay(500);
   }
-  // check for SPS30 connection
-  if (sps30.probe() == false) {
-    Errorloop((char *) "-->[E][SPS30] could not probe / connect with SPS30.", 0);
+  Serial.print("SPS sensor probing successful\n");
+  ret = sps30_set_fan_auto_cleaning_interval_days(auto_clean_days);
+  if (ret) {
+    Serial.print("error setting the auto-clean interval: ");
+    Serial.println(ret);
   }
-  else
-    Serial.println(F("-->[SPS30] Detected SPS30."));
-  // reset SPS30 connection
-  if (sps30.reset() == false) {
-    Errorloop((char *) "-->[E][SPS30] could not reset.", 0);
+  ret = sps30_start_measurement();
+  if (ret < 0) {
+    Serial.print("error starting measurement\n");
   }
-  // start measurement
-  if (sps30.start() == true)
-    Serial.println(F("-->[SPS30] Measurement started"));
-  else
-    Errorloop((char *) "-->[E][SPS30] Could NOT start measurement", 0);
-  if (SP30_COMMS == I2C_COMMS) {
-    if (sps30.I2C_expect() == 4)
-      Serial.println(F("-->[E][SPS30] Due to I2C buffersize only the SPS30 MASS concentration is available !!! \n"));
-  }
+  Serial.print("measurements started\n");
+  delay(1000);
   #endif
 }
 
@@ -297,37 +254,28 @@ void sensorLoop()
     wrongDataState();
 
 #else // SENSIRION
-  Serial.print("..........");
-  delay(35);      //Delay for sincronization
-  //static bool header = true;
-  uint8_t ret, error_cnt = 0;
-  struct sps_values val;
-  // loop to get data
   do {
-    ret = sps30.GetValues(&val);
-    // data might not have been ready
-    if (ret == ERR_DATALENGTH){
-        if (error_cnt++ > 3) {
-          ErrtoMess((char *) "-->[E][SPS30] Error during reading values: ",ret);
-          //return(false);
-          return;
-        }
-        delay(1000);
-    }
-    // if other error
-    else if(ret != ERR_OK) {
-      ErrtoMess((char *) "-->[E][SPS30] Error during reading values: ",ret);
-      //return(false);
-      return;
-    }
-  } while (ret != ERR_OK);
+    ret = sps30_read_data_ready(&data_ready);
+    if (ret < 0) {
+      Serial.print("error reading data-ready flag: ");
+      Serial.println(ret);
+    } else if (!data_ready)
+      Serial.print("data not ready, no new measurement available\n");
+    else
+      break;
+    delay(100); /* retry in 100ms */
+  } while (1);
 
+  ret = sps30_read_measurement(&m);
+  if (ret < 0) {
+    Serial.print("error reading measurement\n");
+  } else {   
       Serial.print("-->[SPS30] read > done!");
       statusOn(bit_sensor);
   
-  unsigned int pm25 = round (val.MassPM2);
-  unsigned int pm10 = round (val.MassPM10);
-
+      pm25 = round (m.mc_2p5);
+      pm10 = round (m.mc_10p0);
+  }
   if (pm25 < 1000 && pm10 < 1000)
     {
       showValues(pm25, pm10);

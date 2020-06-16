@@ -9,10 +9,17 @@ vector<unsigned int> v10;      // for average
 unsigned int apm25 = 0;        // last PM2.5 average
 unsigned int apm10 = 0;        // last PM10 average
 #define SENSOR_RETRY  1000     // Sensor read retry
+unsigned int pm25 = 0;
+unsigned int pm10 = 0;
 
 // Sensirion SPS30 sensor
-#define SP30_COMMS I2C_COMMS        // UART OR I2C  !!!!!!!!!!!!!!!!!!!
-//int PM25 = 0;
+int16_t ret;
+uint8_t auto_clean_days = 4;
+uint32_t auto_clean;
+
+struct sps30_measurement m;
+char serial[SPS30_MAX_SERIAL_LEN];
+uint16_t data_ready;
 
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
