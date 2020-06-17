@@ -774,12 +774,8 @@ void setup() {
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  ///
-  delay(1000);
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
-  delay(1000);
-  ///
   am2320.begin();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
