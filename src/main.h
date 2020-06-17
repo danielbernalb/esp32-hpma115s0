@@ -13,13 +13,7 @@ unsigned int pm25 = 0;
 unsigned int pm10 = 0;
 
 // Sensirion SPS30 sensor
-int16_t ret;
-uint8_t auto_clean_days = 4;
-uint32_t auto_clean;
 
-struct sps30_measurement m;
-char serial[SPS30_MAX_SERIAL_LEN];
-uint16_t data_ready;
 
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
