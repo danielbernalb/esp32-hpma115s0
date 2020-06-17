@@ -1,6 +1,6 @@
 #include "sps30.h"
 
-#define SP30_COMMS I2C_COMMS  // UART OR I2C
+#define SP30_COMMS SERIALPORT2  // UART OR I2C
 
 // function prototypes (sometimes the pre-processor does not create prototypes themself on ESPxx)
 void ErrtoMess(char *mess, uint8_t r);
