@@ -66,918 +66,264 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 ////
 #endif
 
-SoftwareSerial hpmaSerial1;
-SoftwareSerial hpmaSerial2;
-SoftwareSerial hpmaSerial3;
-SoftwareSerial hpmaSerial4;
-
-SPS30 sps30;
-
-/******************************************************************************
-*   S E N S O R  M E T H O D S
-******************************************************************************/
-
-/**
- * [DEPRECATED] sensorConfig:
- * The next method is only if Honeywell sensor was config without autosend
+/*
+ * Read particle matter using a Honeywell HPMA115S0-XXX and a ESP8266 (WeMos Mini)
  */
 
-/*
-#ifdef HONEYWELL
-void sensorConfig()
-{
-  Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
-  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-  hpma115S0.Init();
-  delay(100);
-  hpma115S0.EnableAutoSend();
-  delay(100);
-  hpma115S0.StartParticleMeasurement();
-  delay(100);
-  Serial.println("-->[HPMA] sensor configured.");
+#define DEBUG false
+#define pin_rx1 18 //OK Honeywell
+#define pin_tx1 22
+#define pin_rx2 19 //Paila PMSA003, checksum mismatch
+#define pin_tx2 21
+#define pin_rx3 23 //OK PMS7003
+#define pin_tx3 27
+#define pin_rx4 5  //Panasonic
+#define pin_tx4 25
+
+SoftwareSerial Device1(pin_rx4, pin_tx4);
+//SoftwareSerial Device2(pin_rx3, pin_tx3);
+
+int pm25 = 0;   // PM2.5
+int pm10 = 0;   // PM10
+
+unsigned long lastReading = 0;
+
+int readResponse1(int l = 32) {
+  int i = 0;
+  int buf[l];
+  
+  unsigned long start = millis();
+
+  while(Device1.available() > 0 && i < l) {
+
+    buf[i] = Device1.read();                 // read bytes from device
+
+    if(DEBUG) {
+      Serial.print("i: "); Serial.print(i);
+      Serial.print(" buf[i]: "); Serial.println(buf[i], HEX);
+    }
+
+    // check for HEAD or skip a byte
+    if(i == 0 && !(buf[0] == 0x40 || buf[0] == 0x42 || buf[0] == 0xA5 || buf[0] == 0x96)) {
+      if(DEBUG) { Serial.println("Skipping Byte"); }
+      continue;
+    } else {
+      i++;
+    }
+
+    if(buf[0] == 0x42 && buf[1] == 0x4d) {  // Autosend
+      if(DEBUG) { Serial.println("Autosend"); }
+      l=32;
+    }
+
+    if(buf[0] == 0x40 && buf[2] == 0x4) {   // Reading
+      if(DEBUG) { Serial.println("Reading"); }
+      l=8;
+    }
+
+    if(buf[0] == 0xA5 && buf[1] == 0xA5) {  // Pos. ACK
+      if(DEBUG) { Serial.println("ACK"); }
+      return true;
+    }
+    
+    if(buf[0] == 0x96 && buf[1] == 0x96) {  // Neg. ACK
+      if(DEBUG) { Serial.println("NACK"); }
+      return false;
+    }
+
+    if (millis() - start > 1000) {          // trigger Timeout after 1 sec
+      Serial.println("Timeout");
+      return false;
+    }
+
+  }
+
+  // check checksum in Reading
+  if(buf[2] == 0x04) {
+    // HEAD+LEN+CMD
+    int cs = buf[0] + buf[1] + buf[2];
+    int c;
+    
+    // DATA
+    for(c = 3; c < (2 + buf[1]); c++) {
+      // Serial.println(buf[c]);
+      cs += buf[c];
+    }
+    // CS = MOD((65536-(HEAD+LEN+CMD+DATA)), 256)
+    cs = (65536 - cs) % 256;
+    
+    // validate checksum
+    if(cs == buf[c]) {
+      // calculate PM values
+      pm25 = buf[3] * 256 + buf[4];
+      pm10 = buf[5] * 256 + buf[6];
+      return true;
+    } else {
+      Serial.println("Checksum mismatch");
+    }
+  } else if(buf[3] == 0x1c) {  // Autoreading
+    int cs = 0;
+    int c;
+    // DATA
+    for(c = 0; c <= buf[3]; c++) {
+      // Serial.println(buf[c]);
+      cs += buf[c];
+    }
+    int checksum = buf[30] * 256 + buf[31];
+    if(DEBUG) {
+      Serial.print("Checksum: "); Serial.print(checksum, HEX);
+      Serial.print(" CS: "); Serial.println(cs, HEX);
+    }
+
+    if(cs == checksum) {
+      // calculate PM values
+      pm25 = buf[6] * 256 + buf[7];
+      pm10 = buf[8] * 256 + buf[9];
+      return true;
+    } else {
+      Serial.println("Checksum mismatch");
+    }
+  } else {
+    // unkown
+  }
+  
+  return false;
 }
-#endif
+/*
+int readResponse2(int l = 32) {
+  int i = 0;
+  int buf[l];
+  
+  unsigned long start = millis();
+
+  while(Device2.available() > 0 && i < l) {
+
+    buf[i] = Device2.read();                 // read bytes from device
+
+    if(DEBUG) {
+      Serial.print("i: "); Serial.print(i);
+      Serial.print(" buf[i]: "); Serial.println(buf[i], HEX);
+    }
+
+    // check for HEAD or skip a byte
+    if(i == 0 && !(buf[0] == 0x40 || buf[0] == 0x42 || buf[0] == 0xA5 || buf[0] == 0x96)) {
+      if(DEBUG) { Serial.println("Skipping Byte"); }
+      continue;
+    } else {
+      i++;
+    }
+
+    if(buf[0] == 0x42 && buf[1] == 0x4d) {  // Autosend
+      if(DEBUG) { Serial.println("Autosend"); }
+      l=32;
+    }
+
+    if(buf[0] == 0x40 && buf[2] == 0x4) {   // Reading
+      if(DEBUG) { Serial.println("Reading"); }
+      l=8;
+    }
+
+    if(buf[0] == 0xA5 && buf[1] == 0xA5) {  // Pos. ACK
+      if(DEBUG) { Serial.println("ACK"); }
+      return true;
+    }
+    
+    if(buf[0] == 0x96 && buf[1] == 0x96) {  // Neg. ACK
+      if(DEBUG) { Serial.println("NACK"); }
+      return false;
+    }
+
+    if (millis() - start > 1000) {          // trigger Timeout after 1 sec
+      Serial.println("Timeout");
+      return false;
+    }
+
+  }
+
+  // check checksum in Reading
+  if(buf[2] == 0x04) {
+    // HEAD+LEN+CMD
+    int cs = buf[0] + buf[1] + buf[2];
+    int c;
+    
+    // DATA
+    for(c = 3; c < (2 + buf[1]); c++) {
+      // Serial.println(buf[c]);
+      cs += buf[c];
+    }
+    // CS = MOD((65536-(HEAD+LEN+CMD+DATA)), 256)
+    cs = (65536 - cs) % 256;
+    
+    // validate checksum
+    if(cs == buf[c]) {
+      // calculate PM values
+      pm25 = buf[3] * 256 + buf[4];
+      pm10 = buf[5] * 256 + buf[6];
+      return true;
+    } else {
+      Serial.println("Checksum mismatch");
+    }
+  } else if(buf[3] == 0x1c) {  // Autoreading
+    int cs = 0;
+    int c;
+    // DATA
+    for(c = 0; c <= buf[3]; c++) {
+      // Serial.println(buf[c]);
+      cs += buf[c];
+    }
+    int checksum = buf[30] * 256 + buf[31];
+    if(DEBUG) {
+      Serial.print("Checksum: "); Serial.print(checksum, HEX);
+      Serial.print(" CS: "); Serial.println(cs, HEX);
+    }
+
+    if(cs == checksum) {
+      // calculate PM values
+      pm25 = buf[6] * 256 + buf[7];
+      pm10 = buf[8] * 256 + buf[9];
+      return true;
+    } else {
+      Serial.println("Checksum mismatch");
+    }
+  } else {
+    // unkown
+  }
+  
+  return false;
+}
 */
-
-//#ifdef SENSIRION
-void ErrtoMess(char *mess, uint8_t r)
-{
-  char buf[80];
-  Serial.print(mess);
-  sps30.GetErrDescription(r, buf, 80);
-  Serial.println(buf);
+void setup() {
+  // init Serial for ESP8266
+  Serial.begin(115200); Serial.println();
+  // init Serial for Device
+  Device1.begin(9600); Device1.println();
+//  Device2.begin(9600); Device2.println();
 }
 
-void Errorloop(char *mess, uint8_t r)
-{
-  if (r)
-    ErrtoMess(mess, r);
-  else
-    Serial.println(mess);
-  Serial.println(F("Program on hold"));
-  //for(;;) delay(100000);
-  for (;;)
-    delay(500);
-}
-//#endif
+void loop() {
 
-void sensorInit()
-{
-//#ifdef HONEYWELL
-  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  delay(100);
-  hpmaSerial2.begin(9600, SWSERIAL_8N1, HPMA_RX1, 2, false, 95, 11 );
-  delay(100);
-//#elif PANASONIC
-  Serial.println("-->[SN] starting SN-GCJA5 sensor..");
-  delay(100);
-  hpmaSerial2.begin(9600, SWSERIAL_8N1, HPMA_RX2, 0, false, 95, 11 );
-  delay(100);
-//
-  Serial.println("-->[PMS] starting PMS7003 sensor..");
-  delay(100);
-  hpmaSerial3.begin(9600, SWSERIAL_8N1, HPMA_RX3, 4, false, 95, 11 );
-//
-  Serial.println("-->[PMS] starting PMSA03 sensor..");
-  delay(100);
-  hpmaSerial4.begin(9600, SWSERIAL_8N1, HPMA_RX4, 32, false, 95, 11 );
-//#else //SENSIRION
-  Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-  if (sps30.begin(SP30_COMMS) == false) // Begin communication channel;
-  {
-    Errorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
-  }
-  if (sps30.probe() == false) // check for SPS30 connection
-  {
-    Errorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
-  }
-  else
-    Serial.println(F("-->[SPS30] Detected SPS30."));
-  if (sps30.reset() == false) // reset SPS30 connection
-  {
-    Errorloop((char *)"-->[E][SPS30] could not reset.", 0);
-  }
-  if (sps30.start() == true) // start measurement
-    Serial.println(F("-->[SPS30] Measurement OK"));
-  else
-    Errorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
-  if (SP30_COMMS == I2C_COMMS)
-  {
-    if (sps30.I2C_expect() == 4)
-      Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
-  }
-//#endif
-}
+  if(millis() - lastReading >= 1000 || lastReading == 0) {
+    lastReading = millis();
 
-void wrongDataState()
-{
-  setErrorCode(ecode_sensor_read_fail);
-  gui.displaySensorAverage(apm25);
-  gui.displaySensorData(0, 0, chargeLevel, 0.0, 0.0, 0);
-#ifdef HONEYWELL
-  Serial.print("-->[E][HPMA] !wrong data!");
-  hpmaSerial1.end();
-#elif PANASONIC
-  Serial.print("-->[E][SNGC] !wrong data!");
-  hpmaSerial1.end();
-#else
-  Serial.print("-->[E][SPS30] !wrong data!");
-#endif
-  statusOff(bit_sensor);
-  sensorInit();
-  delay(500);
-}
-
-/***
- * Average methods
- **/
-
-void saveDataForAverage(unsigned int pm25, unsigned int pm10)
-{
-  v25.push_back(pm25);
-  v10.push_back(pm10);
-}
-
-unsigned int getPM25Average()
-{
-  unsigned int pm25_average = accumulate(v25.begin(), v25.end(), 0.0) / v25.size();
-  v25.clear();
-  return pm25_average;
-}
-
-unsigned int getPM10Average()
-{
-  unsigned int pm10_average = accumulate(v10.begin(), v10.end(), 0.0) / v10.size();
-  v10.clear();
-  return pm10_average;
-}
-
-void averageLoop()
-{
-  if (v25.size() >= cfg.stime)
-  {
-    apm25 = getPM25Average(); // global var for display
-    apm10 = getPM10Average();
-  }
-}
-
-char getLoaderChar()
-{
-  char loader[] = {'/', '|', '\\', '-'};
-  return loader[random(0, 4)];
-}
-
-void showValues(int pm25, int pm10)
-{
-  gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
-  gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
-  gui.displayLiveIcon();
-  saveDataForAverage(pm25, pm10);
-}
-
-/***
- * PM2.5 and PM10 read and visualization
- **/
-
-void sensorLoop()
-{
-#ifndef SENSIRION
-  int try_sensor_read = 0;
-  String txtMsg = "";
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
-  {
-    while (hpmaSerial1.available() > 0)
-    {
-      char inChar = hpmaSerial1.read();
-      txtMsg += inChar;
-#ifdef HONEYWELL
-      Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
-#else
-      Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
-#endif
+    // handle AutoSend
+    
+        if(readResponse1()) {
+          Serial.print("PM 2.5_1: "); Serial.print(pm25);
+          Serial.print(" / PM 10_1: "); Serial.println(pm10);
+        }
     }
-#ifdef HONEYWELL
-    Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
-#else
-    Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
-#endif
-  }
-  if (try_sensor_read > SENSOR_RETRY)
-  {
-    setErrorCode(ecode_sensor_timeout);
-#ifdef HONEYWELL
-///////
-   Serial.print("Trama ");
-   Serial.println(txtMsg);
-///////
-    Serial.println("-->[HPMA] read > fail!");
-    Serial.println("-->[E][HPMA] disconnected ?");
-#else
-    Serial.println("-->[SNGC] read > fail!");
-    Serial.println("-->[E][SNGC] disconnected ?");
-#endif
-    delay(500); // waiting for sensor..
-  }
-#endif
 
-#ifdef PANASONIC
-  if (txtMsg[0] == 02)
-  {
-    Serial.print("-->[SNGC] read > done!");
-    statusOn(bit_sensor);
-    apm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
-    apm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
-    if (apm25 < 2000 && apm10 < 2000)
-    {
-      showValues(apm25, apm10);
+/*  
+  if(millis() - lastReading >= 1000 || lastReading == 0) {
+    lastReading = millis();
+
+    // handle AutoSend
+    
+        if(readResponse2()) {
+          Serial.print("PM 2.5_2: "); Serial.print(pm25);
+          Serial.print(" / PM 10_2: "); Serial.println(pm10);
+        }
     }
-    else
-      wrongDataState();
-  }
-  else
-    wrongDataState();
-
-//#elif HONEYWELL // HONEYWELL  !!!!!!!
-#else
-///////
-   Serial.print("Trama ");
-   Serial.println(txtMsg);
-///////
-  if (txtMsg[0] == 66)
-  {
-    if (txtMsg[1] == 77)
-    {
-      Serial.print("-->[HPMA] read > done!");
-      statusOn(bit_sensor);
-      apm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      apm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if (apm25 < 1000 && apm10 < 1000)
-      {
-        showValues(apm25, apm10);
-      }
-      else
-        wrongDataState();
-    }
-    else
-      wrongDataState();
-  }
-  else
-    wrongDataState();
-
-/*
-//#else // SENSIRION   !!!!!!!!
-  delay(35); //Delay for sincronization
-  // loop to get data
-  do
-  {
-    ret = sps30.GetValues(&val);
-    // data might not have been ready
-    if (ret == ERR_DATALENGTH)
-    {
-      if (error_cnt++ > 3)
-      {
-        ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-        //return(false);
-        return;
-      }
-      delay(1000);
-    }
-    // if other error
-    else if (ret != ERR_OK)
-    {
-      ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-      //return(false);
-      return;
-    }
-  } while (ret != ERR_OK);
-
-  Serial.print("-->[SPS30] read > done!");
-  statusOn(bit_sensor);
-
-  apm25 = round(val.MassPM2);
-  apm10 = round(val.MassPM10);
-
-  if (apm25 < 1000 && apm10 < 1000)
-  {
-    showValues(apm25, apm10);
-  }
-  else
-    wrongDataState();
 
     */
-#endif
-}
-
-void statusLoop()
-{
-  if (v25.size() == 0)
-  {
-    Serial.print("-->[STATUS] ");
-    Serial.println(status.to_string().c_str());
-    updateStatusError();
-    wifiCheck();
-  }
-  gui.updateError(getErrorCode());
- 
-  //gui.displayStatus(wifiOn, true, deviceConnected, dataSendToggle);
-  gui.displayStatus(wifiOn, true, false, dataSendToggle);
-
-  if (triggerSaveIcon++ < 3)
-    gui.displayPrefSaveIcon(true);
-  else
-    gui.displayPrefSaveIcon(false);
-  if (dataSendToggle)
-    dataSendToggle = false;
-}
-
-String getNotificationData()
-{
-  StaticJsonDocument<40> doc;
-  doc["P25"] = apm25; // notification capacity is reduced, only main value
-  String json;
-  serializeJson(doc, json);
-  return json;
-}
-
-String getSensorData()
-{
-  StaticJsonDocument<150> doc;
-  doc["P25"] = apm25;
-  doc["P10"] = apm10;
-  doc["lat"] = cfg.lat;
-  doc["lon"] = cfg.lon;
-  doc["alt"] = cfg.alt;
-  doc["spd"] = cfg.spd;
-  doc["sta"] = status.to_string().c_str();
-  String json;
-  serializeJson(doc, json);
-  return json;
-}
-
-void getHumidityRead()
-{
-  humi = am2320.readHumidity();
-  temp = am2320.readTemperature();
-  if (isnan(humi))
-    humi = 0.0;
-  if (isnan(temp))
-    temp = 0.0;
-  Serial.println("-->[AM2320] Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
-}
-
-void humidityLoop()
-{
-#ifdef ESP32Sboard
-  digitalWrite(LED, LOW);
-#endif
-  if (v25.size() == 0)
-  {
-    getHumidityRead();
-#ifdef ESP32Sboard
-    digitalWrite(LED, HIGH);
-#endif
-  }
-}
-
-/******************************************************************************
-*   B A T T E R Y   C H A R G E   S T A T U S   M E T H O D S
-******************************************************************************/
-// IP5306_2 = pin 27 ESP32, pin 2 IP5306
-// IP5306_3 = pin 26 ESP32, pin 3 IP5306
-
-void batteryloop()
-{
-#ifdef TTGO_TQ
-  Rdelay = 0;
-  while (digitalRead(IP5306_2) == HIGH)
-  {
-    delayMicroseconds(100); // Sincronization in 1
-  }
-  delayMicroseconds(50); // Probably double shoot in 0
-  while (digitalRead(IP5306_2) == HIGH)
-  {
-    delayMicroseconds(100); // Sincronization in 1
-  }
-  while (digitalRead(IP5306_2) == LOW && Rdelay < 56)
-  {
-    delayMicroseconds(100); // Sincronization in 0
-    Rdelay = Rdelay + 1;
-  }
-  if (Rdelay > 52)
-  {
-    chargeLevel = 0; // 0%
-    return;
-  }
-  delayMicroseconds(1600);
-  if (digitalRead(IP5306_2) == HIGH)
-  {
-    delayMicroseconds(100);
-    if (digitalRead(IP5306_2) == HIGH)
-    {
-      chargeLevel = 100; // 100%
-      return;
-    }
-  }
-  if (digitalRead(IP5306_3) == LOW)
-  {
-    delayMicroseconds(100);
-    if (digitalRead(IP5306_3) == LOW)
-    {
-      chargeLevel = 25; // 25%
-      return;
-    }
-  }
-  delayMicroseconds(1100);
-  if (digitalRead(IP5306_3) == HIGH)
-  {
-    delayMicroseconds(100);
-    if (digitalRead(IP5306_3) == HIGH)
-    {
-      chargeLevel = 75; // 75%
-      return;
-    }
-  }
-  if (digitalRead(IP5306_3) == LOW)
-  {
-    chargeLevel = 50; // 50%
-    return;
-  }
-#endif
-}
-
-/******************************************************************************
-*   C A N A I R I O  P U B L I S H   M E T H O D S
-******************************************************************************/
-
-bool apiIsConfigured()
-{
-  return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0 && cfg.dname.length() > 0;
-}
-
-void apiInit()
-{
-  if (wifiOn && apiIsConfigured())
-  {
-    Serial.println("-->[API] Connecting..");
-    // stationId and deviceId, optional endpoint, host and port
-    if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
-      api.configure(cfg.dname.c_str(), cfg.deviceId);
-    else
-      api.configure(cfg.dname.c_str(), cfg.deviceId, cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt);
-    api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
-    // api.dev = true;
-    cfg.isNewAPIConfig = false; // flag for config via BLE
-    delay(1000);
-  }
-}
-
-void apiLoop()
-{
-  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0)
-  {
-    Serial.print("-->[API] writing to ");
-    Serial.print("" + String(api.ip) + "..");
-    bool status = api.write(0, apm25, apm10, humi, temp, cfg.lat, cfg.lon, cfg.alt, cfg.spd, cfg.stime);
-    int code = api.getResponse();
-    if (status)
-    {
-      Serial.println("done. [" + String(code) + "]");
-      statusOn(bit_cloud);
-      dataSendToggle = true;
-    }
-    else
-    {
-      Serial.println("fail! [" + String(code) + "]");
-      statusOff(bit_cloud);
-      setErrorCode(ecode_api_write_fail);
-      if (code == -1)
-      {
-        Serial.println("-->[E][API] publish error (-1)");
-        delay(1000);
-      }
-    }
-  }
-}
-
-/******************************************************************************
-*   I N F L U X D B   M E T H O D S
-******************************************************************************/
-
-bool influxDbIsConfigured()
-{
-  return cfg.ifxdb.length() > 0 && cfg.ifxip.length() > 0 && cfg.dname.length() > 0;
-}
-
-void influxDbInit()
-{
-  if (wifiOn && influxDbIsConfigured())
-  {
-    Serial.println("-->[INFLUXDB] connecting..");
-    influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str()); //third argument (port number) defaults to 8086
-    Serial.print("-->[INFLUXDB] Using HTTPS: ");
-    Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-    cfg.isNewIfxdbConfig = false;      // flag for config via BLE
-    delay(1000);
-  }
-}
-
-/**
- * @influxDbParseFields:
- *
- * Supported:
- * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
- *
- */
-void influxDbParseFields(char *fields)
-{
-  sprintf(
-      fields,
-      "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-      0, apm25, apm10, humi, temp, cfg.lat, cfg.lon, cfg.alt, cfg.spd, cfg.stime, 0);
-}
-
-void influxDbAddTags(char *tags)
-{
-  sprintf(tags, "mac=%04X%08X", (uint16_t)(cfg.chipid >> 32), (uint32_t)cfg.chipid);
-}
-
-bool influxDbWrite()
-{
-  if (apm25 == 0 || apm10 == 0)
-  {
-    return false;
-  }
-  char tags[64];
-  influxDbAddTags(tags);
-  char fields[256];
-  influxDbParseFields(fields);
-  return influx.write(cfg.dname.c_str(), tags, fields);
-}
-
-void influxDbLoop()
-{
-  if (v25.size() == 0 && wifiOn && cfg.isIfxEnable() && influxDbIsConfigured())
-  {
-    int ifx_retry = 0;
-    Serial.print("-->[INFLUXDB] writing to ");
-    Serial.print("" + cfg.ifxip + "..");
-    while (!influxDbWrite() && (ifx_retry++ < IFX_RETRY_CONNECTION))
-    {
-      Serial.print(".");
-      delay(200);
-    }
-    if (ifx_retry > IFX_RETRY_CONNECTION)
-    {
-      Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
-      statusOff(bit_cloud);
-      setErrorCode(ecode_ifdb_write_fail);
-      wifiRestart();
-    }
-    else
-    {
-      Serial.println("done. [" + String(influx.getResponse()) + "]");
-      statusOn(bit_cloud);
-      dataSendToggle = true;
-    }
-  }
-}
-
-/******************************************************************************
-*   W I F I   M E T H O D S
-******************************************************************************/
-
-class MyOTAHandlerCallbacks : public OTAHandlerCallbacks
-{
-  void onStart()
-  {
-    gui.showWelcome();
-    gui.welcomeAddMessage("Upgrading..");
-  };
-  void onProgress(unsigned int progress, unsigned int total)
-  {
-    gui.showProgress(progress, total);
-  };
-  void onEnd()
-  {
-    gui.welcomeAddMessage("");
-    gui.welcomeAddMessage("success!");
-    delay(1000);
-    gui.welcomeAddMessage("rebooting..");
-    delay(500);
-  }
-  void onError()
-  {
-    gui.welcomeAddMessage("");
-    gui.welcomeAddMessage("error, try again!");
-    delay(2000);
-  }
-};
-
-void otaLoop()
-{
-  timerAlarmDisable(timer); // disable interrupt
-  if (wifiOn)
-    ota.loop();
-  timerAlarmEnable(timer); // enable interrupt
-}
-
-void otaInit()
-{
-  ota.setup("CanAirIO", "CanAirIO");
-  ota.setCallbacks(new MyOTAHandlerCallbacks());
-}
-
-bool wifiCheck()
-{
-  wifiOn = WiFi.isConnected();
-  if (wifiOn)
-    statusOn(bit_wan); // TODO: We need validate internet connection
-  else
-  {
-    statusOff(bit_cloud);
-    statusOff(bit_wan);
-  }
-  return wifiOn;
-}
-
-void wifiConnect(const char *ssid, const char *pass)
-{
-  Serial.print("-->[WIFI] Connecting to ");
-  Serial.print(ssid);
-  WiFi.begin(ssid, pass);
-  int wifi_retry = 0;
-  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION)
-  {
-    Serial.print(".");
-    delay(500); // increment this delay on possible reconnect issues
-  }
-  if (wifiCheck())
-  {
-    cfg.isNewWifi = false; // flag for config via BLE
-    Serial.println("done\n-->[WIFI] connected!");
-    Serial.print("-->[WIFI][IP]");
-    Serial.println(WiFi.localIP());
-    otaInit();
-  }
-  else
-  {
-    Serial.println("fail!\n-->[E][WIFI] disconnected!");
-    setErrorCode(ecode_wifi_fail);
-  }
-}
-
-void wifiInit()
-{
-  if (cfg.wifiEnable && cfg.ssid.length() > 0 && cfg.pass.length() > 0)
-  {
-    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
-  }
-}
-
-void wifiStop()
-{
-  if (wifiOn)
-  {
-    Serial.println("-->[WIFI] Disconnecting..");
-    WiFi.disconnect(true);
-    wifiOn = false;
-    delay(1000);
-  }
-}
-
-void wifiRestart()
-{
-  wifiStop();
-  wifiInit();
-}
-
-void wifiLoop()
-{
-  if (v25.size() == 0 && cfg.wifiEnable && cfg.ssid.length() > 0 && !wifiCheck())
-  {
-    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
-    influxDbInit();
-    apiInit();
-  }
-}
-
-
-/******************************************************************************
-*   B L U E T O O T H  M E T H O D S
-******************************************************************************/
-
-/*
-class MyServerCallbacks : public BLEServerCallbacks
-{
-  void onConnect(BLEServer *pServer)
-  {
-    Serial.println("-->[BLE] onConnect");
-    statusOn(bit_paired);
-    deviceConnected = true;
-  };
-
-  void onDisconnect(BLEServer *pServer)
-  {
-    Serial.println("-->[BLE] onDisconnect");
-    statusOff(bit_paired);
-    deviceConnected = false;
-  };
-}; // BLEServerCallbacks
-
-class MyConfigCallbacks : public BLECharacteristicCallbacks
-{
-  void onWrite(BLECharacteristic *pCharacteristic)
-  {
-    std::string value = pCharacteristic->getValue();
-    if (value.length() > 0)
-    {
-      if (cfg.save(value.c_str()))
-      {
-        triggerSaveIcon = 0;
-        cfg.reload();
-        if (cfg.isNewWifi)
-        {
-          wifiRestart();
-          apiInit();
-          influxDbInit();
-        }
-        if (cfg.isNewIfxdbConfig)
-          influxDbInit();
-        if (cfg.isNewAPIConfig)
-          apiInit();
-        if (!cfg.wifiEnable)
-          wifiStop();
-      }
-      else
-      {
-        setErrorCode(ecode_invalid_config);
-      }
-      pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-      pCharactData->setValue(getSensorData().c_str());
-    }
-  }
-};
-
-void bleServerInit()
-{
-  // Create the BLE Device
-  BLEDevice::init("ESP32_HPMA115S0");
-  // Create the BLE Server
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  // Create a BLE Characteristic for PM 2.5
-  pCharactData = pService->createCharacteristic(
-      CHARAC_DATA_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-  // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
-  pCharactConfig = pService->createCharacteristic(
-      CHARAC_CONFIG_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-  // Create a Data Descriptor (for notifications)
-  pCharactData->addDescriptor(new BLE2902());
-  // Saved current sensor data
-  pCharactData->setValue(getSensorData().c_str());
-  // Setting Config callback
-  pCharactConfig->setCallbacks(new MyConfigCallbacks());
-  // Saved current config data
-  pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-  // Start the service
-  pService->start();
-  // Start advertising
-  pServer->getAdvertising()->start();
-  Serial.println("-->[BLE] GATT server ready. (Waiting for client)");
-}
-
-void bleLoop()
-{
-  // notify changed value
-  if (deviceConnected && v25.size() == 0)
-  { // v25 test for get each ~5 sec aprox
-    Serial.println("-->[BLE] sending notification..");
-    pCharactData->setValue(getNotificationData().c_str()); // small payload for notification
-    pCharactData->notify();
-    pCharactData->setValue(getSensorData().c_str()); // load big payload for possible read
-  }
-  // disconnecting
-  if (!deviceConnected && oldDeviceConnected)
-  {
-    delay(500);                  // give the bluetooth stack the chance to get things ready
-    pServer->startAdvertising(); // restart advertising
-    Serial.println("-->[BLE] start advertising");
-    oldDeviceConnected = deviceConnected;
-  }
-  // connecting
-  if (deviceConnected && !oldDeviceConnected)
-  {
-    // do stuff here on connecting
-    oldDeviceConnected = deviceConnected;
-  }
-}
-
-*/
-
-void resetLoop()
-{
-  if (wifiOn)
-  {
-    rssi = WiFi.RSSI();
-    if (resetvar == 1199)
-    {
-      resetvar = 0;
-      delay(45000); // 45 seconds, reset at 30 seconds
-    }
-    resetvar = resetvar + 1;
-  }
-  else
-  {
-    rssi = 0;
-  }
-}
-
-/******************************************************************************
-*  M A I N
-******************************************************************************/
-
-void IRAM_ATTR resetModule()
-{
-  Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
-  esp_wifi_disconnect();
-  delay(200);
-  esp_wifi_stop();
-  delay(200);
-  esp_wifi_deinit();
-  delay(200);
-  ESP.restart();
-}
-
-void enableWatchdog()
-{
-  timer = timerBegin(0, 80, true);                 // timer 0, div 80
-  timerAttachInterrupt(timer, &resetModule, true); // setting callback
-  timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
-  timerAlarmEnable(timer);                         // enable interrupt
-}
-
-void setup()
-{
-#ifdef TTGO_TQ
-  pinMode(IP5306_2, INPUT);
-  pinMode(IP5306_3, INPUT);
-#endif
-  pinMode(21, INPUT_PULLUP);
-  pinMode(22, INPUT_PULLUP);
-  Serial.begin(115200);
-  gui.displayInit(u8g2);
-  gui.showWelcome();
-  cfg.init("canairio");
-  Serial.println("\n== INIT SETUP ==\n");
-  Serial.println("-->[INFO] ESP32MAC: " + String(cfg.deviceId));
-  gui.welcomeAddMessage("Sensors test..");
-  sensorInit();
-  am2320.begin();
-  
-  //bleServerInit();                  !!!!!!!!!!!!!!!!!!!!!!!!!
-  
-  gui.welcomeAddMessage("GATT server..");
-  if (cfg.ssid.length() > 0)
-    gui.welcomeAddMessage("WiFi:" + cfg.ssid);
-  else
-    gui.welcomeAddMessage("WiFi radio test..");
-  wifiInit();
-  gui.welcomeAddMessage("CanAirIO API..");
-  influxDbInit();
-  apiInit();
-  pinMode(LED, OUTPUT);
-  gui.welcomeAddMessage("==SETUP READY==");
-  enableWatchdog(); // enable timer for reboot in any loop blocker
-  delay(500);
-}
-
-void loop()
-{
-  gui.pageStart();
-  sensorLoop();   // read sensor data and showed it
-  averageLoop();  // calculated of sensor data average
-  humidityLoop(); // read AM2320
-  batteryloop();  // battery charge status
-
-  //bleLoop();      // notify data to connected devices   !!!!!!!!!!!!!!!!!
-  
-  wifiLoop();     // check wifi and reconnect it
-  apiLoop();      // CanAir.io API publication
-  influxDbLoop(); // influxDB publication
-  statusLoop();   // update sensor status GUI
-  otaLoop();      // check for firmware updates
-  gui.pageEnd();  // gui changes push
-#ifdef HONEYWELL
-  delay(500);
-#elif PANASONIC
-  delay(500);
-#else
-  delay(900);
-#endif
-  timerWrite(timer, 0); //reset timer (feed watchdog)
-  resetLoop();          // reset every 20 minutes with Wifion
 }
