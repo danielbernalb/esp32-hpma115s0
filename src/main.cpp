@@ -88,6 +88,10 @@ int pm10 = 0;   // PM10
 
 unsigned long lastReading = 0;
 
+//////////////////////////////////////
+//   LECTURA DEL SENSOR HONEYWELL   //
+//////////////////////////////////////
+
 int readResponse1(int l = 32) {
   int i = 0;
   int buf[l];
