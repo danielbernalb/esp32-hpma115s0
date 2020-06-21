@@ -80,8 +80,10 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 #define pin_rx4 5  //Panasonic
 #define pin_tx4 25
 
-SoftwareSerial Device1(pin_rx4, pin_tx4);
-//SoftwareSerial Device2(pin_rx3, pin_tx3);
+SoftwareSerial Device1(pin_rx1, pin_tx1);
+SoftwareSerial Device2(pin_rx2, pin_tx2);
+SoftwareSerial Device2(pin_rx3, pin_tx3);
+SoftwareSerial Device2(pin_rx4, pin_tx4);
 
 int pm25 = 0;   // PM2.5
 int pm10 = 0;   // PM10
