@@ -16,10 +16,6 @@
 #include <ArduinoJson.h>
 #include <numeric>
 #include <hpma115S0.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <Adafruit_Sensor.h>
@@ -27,6 +23,7 @@
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
+#include <SoftwareSerial.h>   //!!!!!!!!!!!!!!!!!!!
 #include "main.h"
 #include "status.h"
 
@@ -59,7 +56,20 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 #else
 #define HPMA_RX 17 // config for D1MIN1 board
 #define HPMA_TX 16
+
+////
+#define HPMA_RX1 18 // config for D1MIN1 board
+#define HPMA_RX2 19 // config for D1MIN1 board
+#define HPMA_RX3 23 // config for D1MIN1 board
+#define HPMA_RX4 5 // config for D1MIN1 board
+
+////
 #endif
+
+SoftwareSerial hpmaSerial1;
+SoftwareSerial hpmaSerial2;
+SoftwareSerial hpmaSerial3;
+SoftwareSerial hpmaSerial4;
 
 SPS30 sps30;
 
@@ -71,6 +81,8 @@ SPS30 sps30;
  * [DEPRECATED] sensorConfig:
  * The next method is only if Honeywell sensor was config without autosend
  */
+
+/*
 #ifdef HONEYWELL
 void sensorConfig()
 {
@@ -85,8 +97,9 @@ void sensorConfig()
   Serial.println("-->[HPMA] sensor configured.");
 }
 #endif
+*/
 
-#ifdef SENSIRION
+//#ifdef SENSIRION
 void ErrtoMess(char *mess, uint8_t r)
 {
   char buf[80];
@@ -106,21 +119,29 @@ void Errorloop(char *mess, uint8_t r)
   for (;;)
     delay(500);
 }
-#endif
+//#endif
 
 void sensorInit()
 {
-#ifdef HONEYWELL
+//#ifdef HONEYWELL
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   delay(100);
-  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  hpmaSerial2.begin(9600, SWSERIAL_8N1, HPMA_RX1, 2, false, 95, 11 );
   delay(100);
-#elif PANASONIC
+//#elif PANASONIC
   Serial.println("-->[SN] starting SN-GCJA5 sensor..");
   delay(100);
-  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  hpmaSerial2.begin(9600, SWSERIAL_8N1, HPMA_RX2, 0, false, 95, 11 );
   delay(100);
-#else //SENSIRION
+//
+  Serial.println("-->[PMS] starting PMS7003 sensor..");
+  delay(100);
+  hpmaSerial3.begin(9600, SWSERIAL_8N1, HPMA_RX3, 4, false, 95, 11 );
+//
+  Serial.println("-->[PMS] starting PMSA03 sensor..");
+  delay(100);
+  hpmaSerial4.begin(9600, SWSERIAL_8N1, HPMA_RX4, 32, false, 95, 11 );
+//#else //SENSIRION
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
   if (sps30.begin(SP30_COMMS) == false) // Begin communication channel;
   {
@@ -145,7 +166,7 @@ void sensorInit()
     if (sps30.I2C_expect() == 4)
       Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
   }
-#endif
+//#endif
 }
 
 void wrongDataState()
@@ -155,10 +176,10 @@ void wrongDataState()
   gui.displaySensorData(0, 0, chargeLevel, 0.0, 0.0, 0);
 #ifdef HONEYWELL
   Serial.print("-->[E][HPMA] !wrong data!");
-  hpmaSerial.end();
+  hpmaSerial1.end();
 #elif PANASONIC
   Serial.print("-->[E][SNGC] !wrong data!");
-  hpmaSerial.end();
+  hpmaSerial1.end();
 #else
   Serial.print("-->[E][SPS30] !wrong data!");
 #endif
@@ -225,9 +246,9 @@ void sensorLoop()
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
   {
-    while (hpmaSerial.available() > 0)
+    while (hpmaSerial1.available() > 0)
     {
-      char inChar = hpmaSerial.read();
+      char inChar = hpmaSerial1.read();
       txtMsg += inChar;
 #ifdef HONEYWELL
       Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
@@ -245,6 +266,10 @@ void sensorLoop()
   {
     setErrorCode(ecode_sensor_timeout);
 #ifdef HONEYWELL
+///////
+   Serial.print("Trama ");
+   Serial.println(txtMsg);
+///////
     Serial.println("-->[HPMA] read > fail!");
     Serial.println("-->[E][HPMA] disconnected ?");
 #else
@@ -272,7 +297,12 @@ void sensorLoop()
   else
     wrongDataState();
 
-#elif HONEYWELL // HONEYWELL
+//#elif HONEYWELL // HONEYWELL  !!!!!!!
+#else
+///////
+   Serial.print("Trama ");
+   Serial.println(txtMsg);
+///////
   if (txtMsg[0] == 66)
   {
     if (txtMsg[1] == 77)
@@ -294,7 +324,8 @@ void sensorLoop()
   else
     wrongDataState();
 
-#else // SENSIRION
+/*
+//#else // SENSIRION   !!!!!!!!
   delay(35); //Delay for sincronization
   // loop to get data
   do
@@ -332,6 +363,8 @@ void sensorLoop()
   }
   else
     wrongDataState();
+
+    */
 #endif
 }
 
@@ -345,7 +378,10 @@ void statusLoop()
     wifiCheck();
   }
   gui.updateError(getErrorCode());
-  gui.displayStatus(wifiOn, true, deviceConnected, dataSendToggle);
+ 
+  //gui.displayStatus(wifiOn, true, deviceConnected, dataSendToggle);
+  gui.displayStatus(wifiOn, true, false, dataSendToggle);
+
   if (triggerSaveIcon++ < 3)
     gui.displayPrefSaveIcon(true);
   else
@@ -725,9 +761,12 @@ void wifiLoop()
   }
 }
 
+
 /******************************************************************************
 *   B L U E T O O T H  M E T H O D S
 ******************************************************************************/
+
+/*
 class MyServerCallbacks : public BLEServerCallbacks
 {
   void onConnect(BLEServer *pServer)
@@ -837,6 +876,8 @@ void bleLoop()
   }
 }
 
+*/
+
 void resetLoop()
 {
   if (wifiOn)
@@ -896,7 +937,9 @@ void setup()
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
-  bleServerInit();
+  
+  //bleServerInit();                  !!!!!!!!!!!!!!!!!!!!!!!!!
+  
   gui.welcomeAddMessage("GATT server..");
   if (cfg.ssid.length() > 0)
     gui.welcomeAddMessage("WiFi:" + cfg.ssid);
@@ -919,7 +962,9 @@ void loop()
   averageLoop();  // calculated of sensor data average
   humidityLoop(); // read AM2320
   batteryloop();  // battery charge status
-  bleLoop();      // notify data to connected devices
+
+  //bleLoop();      // notify data to connected devices   !!!!!!!!!!!!!!!!!
+  
   wifiLoop();     // check wifi and reconnect it
   apiLoop();      // CanAir.io API publication
   influxDbLoop(); // influxDB publication
