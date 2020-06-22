@@ -70,7 +70,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
  * Read particle matter using a Honeywell HPMA115S0-XXX and a ESP8266 (WeMos Mini)
  */
 
-#define DEBUG false
+//#define DEBUG false
+#define DEBUG true
 #define pin_rx1 18 //OK Honeywell
 #define pin_tx1 22
 #define pin_rx2 19 //Paila PMSA003, checksum mismatch
@@ -82,11 +83,17 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 
 SoftwareSerial Device1(pin_rx1, pin_tx1);
 SoftwareSerial Device2(pin_rx2, pin_tx2);
-SoftwareSerial Device2(pin_rx3, pin_tx3);
-SoftwareSerial Device2(pin_rx4, pin_tx4);
+SoftwareSerial Device3(pin_rx3, pin_tx3);
+SoftwareSerial Device4(pin_rx4, pin_tx4);
 
-int pm25 = 0;   // PM2.5
-int pm10 = 0;   // PM10
+int pm25_s1 = 0;   // PM2.5 Software Serial 1
+int pm10_s1 = 0;   // PM10 Software Serial 1
+int pm25_s2 = 0;   // PM2.5 Software Serial 2
+int pm10_s2 = 0;   // PM10 Software Serial 2
+int pm25_s3 = 0;   // PM2.5 Software Serial 3
+int pm10_s3 = 0;   // PM10 Software Serial 3
+int pm25_s4 = 0;   // PM2.5 Software Serial 4
+int pm10_s4 = 0;   // PM10 Software Serial 4
 
 unsigned long lastReading = 0;
 
@@ -105,8 +112,9 @@ int readResponse1(int l = 32) {
     buf[i] = Device1.read();                 // read bytes from device
 
     if(DEBUG) {
-      Serial.print("i: "); Serial.print(i);
-      Serial.print(" buf[i]: "); Serial.println(buf[i], HEX);
+      //Serial.print("i: "); Serial.print(i);
+      //Serial.print(" buf[i]: "); Serial.println(buf[i], HEX);
+      Serial.print(buf[i], HEX);
     }
 
     // check for HEAD or skip a byte
@@ -118,7 +126,8 @@ int readResponse1(int l = 32) {
     }
 
     if(buf[0] == 0x42 && buf[1] == 0x4d) {  // Autosend
-      if(DEBUG) { Serial.println("Autosend"); }
+      //if(DEBUG) { Serial.println("Autosend"); }
+      if(DEBUG) { Serial.print(""); }
       l=32;
     }
 
@@ -137,7 +146,8 @@ int readResponse1(int l = 32) {
       return false;
     }
 
-    if (millis() - start > 1000) {          // trigger Timeout after 1 sec
+   // if (millis() - start > 1000) {          // trigger Timeout after 1 sec
+     if (millis() - start > 800) {          // trigger Timeout after 1 sec
       Serial.println("Timeout");
       return false;
     }
@@ -161,8 +171,8 @@ int readResponse1(int l = 32) {
     // validate checksum
     if(cs == buf[c]) {
       // calculate PM values
-      pm25 = buf[3] * 256 + buf[4];
-      pm10 = buf[5] * 256 + buf[6];
+      pm25_s1 = buf[3] * 256 + buf[4];
+      pm10_s1 = buf[5] * 256 + buf[6];
       return true;
     } else {
       Serial.println("Checksum mismatch");
@@ -183,8 +193,8 @@ int readResponse1(int l = 32) {
 
     if(cs == checksum) {
       // calculate PM values
-      pm25 = buf[6] * 256 + buf[7];
-      pm10 = buf[8] * 256 + buf[9];
+      pm25_s1 = buf[6] * 256 + buf[7];
+      pm10_s1 = buf[8] * 256 + buf[9];
       return true;
     } else {
       Serial.println("Checksum mismatch");
@@ -195,20 +205,25 @@ int readResponse1(int l = 32) {
   
   return false;
 }
-/*
-int readResponse2(int l = 32) {
+
+/////////////////////////////////////
+//   LECTURA DEL SENSOR PMS7003   //
+/////////////////////////////////////
+
+int readResponse3(int l = 32) {
   int i = 0;
   int buf[l];
   
   unsigned long start = millis();
 
-  while(Device2.available() > 0 && i < l) {
+  while(Device3.available() > 0 && i < l) {
 
-    buf[i] = Device2.read();                 // read bytes from device
+    buf[i] = Device3.read();                 // read bytes from device
 
     if(DEBUG) {
-      Serial.print("i: "); Serial.print(i);
-      Serial.print(" buf[i]: "); Serial.println(buf[i], HEX);
+      //Serial.print("i: "); Serial.print(i);
+      //Serial.print(" buf[i]: "); Serial.println(buf[i], HEX);
+      Serial.print(buf[i], HEX);
     }
 
     // check for HEAD or skip a byte
@@ -220,31 +235,18 @@ int readResponse2(int l = 32) {
     }
 
     if(buf[0] == 0x42 && buf[1] == 0x4d) {  // Autosend
-      if(DEBUG) { Serial.println("Autosend"); }
+      //if(DEBUG) { Serial.println("Autosend"); }
+      if(DEBUG) { Serial.print(""); }
       l=32;
     }
 
-    if(buf[0] == 0x40 && buf[2] == 0x4) {   // Reading
-      if(DEBUG) { Serial.println("Reading"); }
-      l=8;
-    }
-
-    if(buf[0] == 0xA5 && buf[1] == 0xA5) {  // Pos. ACK
-      if(DEBUG) { Serial.println("ACK"); }
-      return true;
-    }
-    
-    if(buf[0] == 0x96 && buf[1] == 0x96) {  // Neg. ACK
-      if(DEBUG) { Serial.println("NACK"); }
-      return false;
-    }
-
-    if (millis() - start > 1000) {          // trigger Timeout after 1 sec
+  //  if (millis() - start > 1000) {          // trigger Timeout after 1 sec
+  if (millis() - start > 800) {          // trigger Timeout after 1 sec
       Serial.println("Timeout");
       return false;
     }
-
   }
+
 
   // check checksum in Reading
   if(buf[2] == 0x04) {
@@ -263,8 +265,8 @@ int readResponse2(int l = 32) {
     // validate checksum
     if(cs == buf[c]) {
       // calculate PM values
-      pm25 = buf[3] * 256 + buf[4];
-      pm10 = buf[5] * 256 + buf[6];
+      pm25_s3 = buf[3] * 256 + buf[4];
+      pm10_s3 = buf[5] * 256 + buf[6];
       return true;
     } else {
       Serial.println("Checksum mismatch");
@@ -277,7 +279,7 @@ int readResponse2(int l = 32) {
       // Serial.println(buf[c]);
       cs += buf[c];
     }
-    int checksum = buf[30] * 256 + buf[31];
+    int checksum = buf[30] * 256 + buf[31] - 2;
     if(DEBUG) {
       Serial.print("Checksum: "); Serial.print(checksum, HEX);
       Serial.print(" CS: "); Serial.println(cs, HEX);
@@ -285,8 +287,8 @@ int readResponse2(int l = 32) {
 
     if(cs == checksum) {
       // calculate PM values
-      pm25 = buf[6] * 256 + buf[7];
-      pm10 = buf[8] * 256 + buf[9];
+      pm25_s3 = buf[6] * 256 + buf[7];
+      pm10_s3 = buf[8] * 256 + buf[9];
       return true;
     } else {
       Serial.println("Checksum mismatch");
@@ -297,39 +299,39 @@ int readResponse2(int l = 32) {
   
   return false;
 }
-*/
+
 void setup() {
   // init Serial for ESP8266
   Serial.begin(115200); Serial.println();
   // init Serial for Device
   Device1.begin(9600); Device1.println();
-//  Device2.begin(9600); Device2.println();
+  Device3.begin(9600); Device3.println();
 }
 
 void loop() {
-
-  if(millis() - lastReading >= 1000 || lastReading == 0) {
+// /* 
+  if(millis() - lastReading >= 800 || lastReading == 0) {
     lastReading = millis();
 
     // handle AutoSend
     
         if(readResponse1()) {
-          Serial.print("PM 2.5_1: "); Serial.print(pm25);
-          Serial.print(" / PM 10_1: "); Serial.println(pm10);
+          Serial.print("PM 2.5_1: "); Serial.print(pm25_s1);
+          Serial.print(" / PM 10_1: "); Serial.println(pm10_s1);
         }
     }
 
-/*  
-  if(millis() - lastReading >= 1000 || lastReading == 0) {
+// */    
+// /*
+  if(millis() - lastReading >= 800 || lastReading == 0) {
     lastReading = millis();
 
     // handle AutoSend
     
-        if(readResponse2()) {
-          Serial.print("PM 2.5_2: "); Serial.print(pm25);
-          Serial.print(" / PM 10_2: "); Serial.println(pm10);
+        if(readResponse3()) {
+          Serial.print("PM 2.5_3: "); Serial.print(pm25_s3);
+          Serial.print(" / PM 10_3: "); Serial.println(pm10_s3);
         }
     }
-
-    */
+// */
 }
