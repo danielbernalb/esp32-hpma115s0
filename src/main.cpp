@@ -106,10 +106,11 @@ int readResponse1(int l = 32) {
   int buf[l];
   
   unsigned long start = millis();
+  Serial.println("");
 
-  while(Device1.available() > 0 && i < l) {
+  while(Device4.available() > 0 && i < l) {
 
-    buf[i] = Device1.read();                 // read bytes from device
+    buf[i] = Device4.read();                 // read bytes from device
 
     if(DEBUG) {
       //Serial.print("i: "); Serial.print(i);
@@ -118,12 +119,14 @@ int readResponse1(int l = 32) {
     }
 
     // check for HEAD or skip a byte
-    if(i == 0 && !(buf[0] == 0x40 || buf[0] == 0x42 || buf[0] == 0xA5 || buf[0] == 0x96)) {
-      if(DEBUG) { Serial.println("Skipping Byte"); }
-      continue;
-    } else {
+   // if(i == 0 && !(buf[0] == 0x40 || buf[0] == 0x42 || buf[0] == 0xA5 || buf[0] == 0x96)) {
+   //   if(DEBUG) { Serial.println("Skipping Byte"); }
+   //   continue;
+   // } else {
+   //   i++;
+   // }
       i++;
-    }
+      l=32;
 
     if(buf[0] == 0x42 && buf[1] == 0x4d) {  // Autosend
       //if(DEBUG) { Serial.println("Autosend"); }
@@ -305,7 +308,9 @@ void setup() {
   Serial.begin(115200); Serial.println();
   // init Serial for Device
   Device1.begin(9600); Device1.println();
+  Device2.begin(9600); Device2.println();
   Device3.begin(9600); Device3.println();
+  Device4.begin(9600); Device4.println();
 }
 
 void loop() {
@@ -320,18 +325,4 @@ void loop() {
           Serial.print(" / PM 10_1: "); Serial.println(pm10_s1);
         }
     }
-
-// */    
-// /*
-  if(millis() - lastReading >= 800 || lastReading == 0) {
-    lastReading = millis();
-
-    // handle AutoSend
-    
-        if(readResponse3()) {
-          Serial.print("PM 2.5_3: "); Serial.print(pm25_s3);
-          Serial.print(" / PM 10_3: "); Serial.println(pm10_s3);
-        }
-    }
-// */
 }
