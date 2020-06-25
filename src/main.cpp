@@ -23,7 +23,7 @@
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
-#include <SoftwareSerial.h>   //!!!!!!!!!!!!!!!!!!!
+// #include <SoftwareSerial.h>   //!!!!!!!!!!!!!!!!!!!
 #include "main.h"
 #include "status.h"
 
@@ -54,8 +54,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 #define HPMA_RX 13 // config for TTGO_TQ board
 #define HPMA_TX 18
 #else
-#define HPMA_RX 17 // config for D1MIN1 board
-#define HPMA_TX 16
+#define HPMA_RX 5 // config for D1MIN1 board
+#define HPMA_TX 25
 
 ////
 #define HPMA_RX1 18 // config for D1MIN1 board
@@ -81,10 +81,10 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 #define pin_rx4 5  //Panasonic
 #define pin_tx4 25
 
-SoftwareSerial Device1(pin_rx1, pin_tx1);
-SoftwareSerial Device2(pin_rx2, pin_tx2);
-SoftwareSerial Device3(pin_rx3, pin_tx3);
-SoftwareSerial Device4(pin_rx4, pin_tx4);
+//SoftwareSerial Device1(pin_rx1, pin_tx1);
+//SoftwareSerial Device2(pin_rx2, pin_tx2);
+//SoftwareSerial Device3(pin_rx3, pin_tx3);
+//SoftwareSerial Device4(pin_rx4, pin_tx4);
 
 int pm25_s1 = 0;   // PM2.5 Software Serial 1
 int pm10_s1 = 0;   // PM10 Software Serial 1
@@ -108,9 +108,9 @@ int readResponse1(int l = 32) {
   unsigned long start = millis();
   Serial.println("");
 
-  while(Device4.available() > 0 && i < l) {
+  while(hpmaSerial2.available() > 0 && i < l) {
 
-    buf[i] = Device4.read();                 // read bytes from device
+    buf[i] = hpmaSerial2.read();                 // read bytes from device
 
     if(DEBUG) {
       //Serial.print("i: "); Serial.print(i);
@@ -219,9 +219,9 @@ int readResponse3(int l = 32) {
   
   unsigned long start = millis();
 
-  while(Device3.available() > 0 && i < l) {
+  while(hpmaSerial2.available() > 0 && i < l) {
 
-    buf[i] = Device3.read();                 // read bytes from device
+    buf[i] = hpmaSerial2.read();                 // read bytes from device
 
     if(DEBUG) {
       //Serial.print("i: "); Serial.print(i);
@@ -307,10 +307,16 @@ void setup() {
   // init Serial for ESP8266
   Serial.begin(115200); Serial.println();
   // init Serial for Device
-  Device1.begin(9600); Device1.println();
-  Device2.begin(9600); Device2.println();
-  Device3.begin(9600); Device3.println();
-  Device4.begin(9600); Device4.println();
+//  Device1.begin(9600); Device1.println();
+//  Device2.begin(9600); Device2.println();
+//  Device3.begin(9600); Device3.println();
+//  Device4.begin(9600); Device4.println();
+  
+  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
+  delay(100);
+  hpmaSerial2.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
+  delay(100);
+
 }
 
 void loop() {

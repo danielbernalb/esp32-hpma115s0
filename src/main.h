@@ -4,6 +4,9 @@ using namespace std;
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 
+HardwareSerial hpmaSerial2(2);
+HPMA115S0 hpma115S0_2(hpmaSerial2);
+
 vector<unsigned int> v25; // for average
 vector<unsigned int> v10; // for average
 unsigned int apm25 = 0;   // last PM2.5 average
