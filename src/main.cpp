@@ -145,29 +145,8 @@ void Errorloop(char *mess, uint8_t r)
 }
 //#endif
 
-void sensorInit()
+void SensirionInit() 
 {
-// HONEYWELL
-  Serial.println("-->[HPMA]  starting hpma115S0 sensor..");
-  delay(100);
-  Device1.begin(9600); Device1.println();
-  delay(100);
-//PMSA003
-  Serial.println("-->[PMS]   starting PMSA003 sensor..");
-  delay(100);
-  Device2.begin(9600); Device2.println();
-  delay(100);
-//PMS7003
-  Serial.println("-->[PMS]   starting PMS7003 sensor..");
-  delay(100);
-  Device3.begin(9600); Device3.println();
-  delay(100);
-// PANASONIC
-  Serial.println("-->[SN]    starting SN-GCJA5 sensor..");
-  delay(100);
-  hpmaSerial.begin(9600,SERIAL_8N1,pin_rx4,pin_tx4);
-  delay(100);
-//#else //SENSIRION
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
   if (sps30.begin(SP30_COMMS) == false) // Begin communication channel;
   {
@@ -192,7 +171,33 @@ void sensorInit()
     if (sps30.I2C_expect() == 4)
       Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
   }
-//#endif
+}
+
+void sensorInit()
+{
+// HONEYWELL
+  Serial.println("-->[HPMA]  starting hpma115S0 sensor..");
+  delay(100);
+  Device1.begin(9600); Device1.println();
+  delay(100);
+//PMSA003
+  Serial.println("-->[PMS]   starting PMSA003 sensor..");
+  delay(100);
+  Device2.begin(9600); Device2.println();
+  delay(100);
+//PMS7003
+  Serial.println("-->[PMS]   starting PMS7003 sensor..");
+  delay(100);
+  Device3.begin(9600); Device3.println();
+  delay(100);
+// PANASONIC
+  Serial.println("-->[SN]    starting SN-GCJA5 sensor..");
+  delay(100);
+  hpmaSerial.begin(9600,SERIAL_8N1,pin_rx4,pin_tx4);
+  delay(100);
+//#else //SENSIRION
+  SensirionInit();
+  delay(100);
 }
 
 void wrongDataState()
@@ -204,21 +209,55 @@ void wrongDataState()
   Serial.println("-->[E][Sensor] !wrong data!");
 
   ////////////////////
-  v25.pop_back();
-  v10.pop_back();
+  Serial.print(v25.size());
+  v25.push_back(pm25);   //!!!!!!!!!!Definir num
+  v10.push_back(pm10);
+  Serial.print(v25.size());
   ///////////////////
-  Device1.end();
-  Device2.end();
-  Device3.end();
-  hpmaSerial.end();
-//#elif PANASONIC
-  //Serial.println("-->[E][SNGC] !wrong data!");
-//  Device4.end();
-//#else
-//  Serial.print("-->[E][SPS30] !wrong data!");
-//#endif
+  switch (numsensor-1) {
+  
+  case 0:  // HONEYWELL
+    Device1.end();
+    Serial.println("-->[E][HPMA] !error reading data!");
+    delay(100);
+    Device1.begin(9600); Device1.println();
+    delay(100);
+  break;
+  
+  case 1:  //PMS7003
+    Device2.end();
+    Serial.println("-->[E][PMS7003] !error reading data!");
+    delay(100);
+    Device1.begin(9600); Device1.println();
+    delay(100);
+  break;
+
+  case 2:  // PMSA003
+    Device3.end();
+    Serial.println("-->[E][PMSA003] !error reading data!");
+    delay(100);
+    Device1.begin(9600); Device1.println();
+    delay(100);
+  break;
+
+  case 3:  // PANASONIC
+    hpmaSerial.end();  
+    Serial.println("-->[E][SNGCJA5] !error reading data!");
+    delay(100);
+    hpmaSerial.begin(9600,SERIAL_8N1,pin_rx4,pin_tx4);
+    delay(100);
+  break;
+
+  case 4:  // SPS30
+    Serial.println("-->[E][SPS30] !error reading data!");
+    delay(100);
+    SensirionInit();
+    delay(100);
+  break;
+
+ }
   statusOff(bit_sensor);
-  sensorInit();          //!!!!!!!!!!!!!!!!
+//  sensorInit();          //!!!!!!!!!!!!!!!!
   delay(500);
 }
 
@@ -230,6 +269,7 @@ void saveDataForAverage(unsigned int pm25, unsigned int pm10)
 {
   v25.push_back(pm25);
   v10.push_back(pm10);
+  Serial.print(v25.size());
 }
 
 unsigned int getPM25Average()
