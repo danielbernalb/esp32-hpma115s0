@@ -202,6 +202,11 @@ void wrongDataState()
   gui.displaySensorData(0, 0, chargeLevel, 0.0, 0.0, 0);
 //#ifdef HONEYWELL
   Serial.println("-->[E][Sensor] !wrong data!");
+
+  ////////////////////
+  v25.pop_back();
+  v10.pop_back();
+  ///////////////////
   Device1.end();
   Device2.end();
   Device3.end();
@@ -213,7 +218,7 @@ void wrongDataState()
 //  Serial.print("-->[E][SPS30] !wrong data!");
 //#endif
   statusOff(bit_sensor);
-//  sensorInit();          //!!!!!!!!!!!!!!!!
+  sensorInit();          //!!!!!!!!!!!!!!!!
   delay(500);
 }
 
@@ -548,15 +553,9 @@ void getHumidityRead()
 
 void humidityLoop()
 {
-#ifdef ESP32Sboard
-  digitalWrite(LED, LOW);
-#endif
   if (v25.size() == 0)
   {
     getHumidityRead();
-#ifdef ESP32Sboard
-    digitalWrite(LED, HIGH);
-#endif
   }
 }
 
