@@ -72,7 +72,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_
 #define pin_tx2 21
 #define pin_rx3 23 // PMS7003
 #define pin_tx3 27
-#define pin_rx4 5  // Panasonic !!!!!!!!!!! 
+#define pin_rx4 5 // Panasonic !!!!!!!!!!!
 #define pin_tx4 25
 
 SoftwareSerial Device1(pin_rx1, pin_tx1);
@@ -80,14 +80,14 @@ SoftwareSerial Device2(pin_rx2, pin_tx2);
 SoftwareSerial Device3(pin_rx3, pin_tx3);
 //SoftwareSerial Device4(pin_rx4, pin_tx4);
 
-int pm25_s1 = 0;   // PM2.5 Software Serial 1
-int pm10_s1 = 0;   // PM10 Software Serial 1
-int pm25_s2 = 0;   // PM2.5 Software Serial 2
-int pm10_s2 = 0;   // PM10 Software Serial 2
-int pm25_s4 = 0;   // PM2.5 Software Serial 3
-int pm10_s4 = 0;   // PM10 Software Serial 3
-int pm25_s5 = 0;   // PM2.5 Software Serial 4
-int pm10_s5 = 0;   // PM10 Software Serial 4
+int pm25_s1 = 0; // PM2.5 Software Serial 1
+int pm10_s1 = 0; // PM10 Software Serial 1
+int pm25_s2 = 0; // PM2.5 Software Serial 2
+int pm10_s2 = 0; // PM10 Software Serial 2
+int pm25_s4 = 0; // PM2.5 Software Serial 3
+int pm10_s4 = 0; // PM10 Software Serial 3
+int pm25_s5 = 0; // PM2.5 Software Serial 4
+int pm10_s5 = 0; // PM10 Software Serial 4
 
 SPS30 sps30;
 
@@ -134,10 +134,10 @@ void Errorloop(char *mess, uint8_t r)
   Serial.println(F("-->[E][SPS30] !error reading data!"));
   //for(;;) delay(100000);
   //for (;;)
-    delay(500);
+  delay(500);
 }
 
-void SensirionInit() 
+void SensirionInit()
 {
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
   if (sps30.begin(SP30_COMMS) == false) // Begin communication channel;
@@ -167,27 +167,30 @@ void SensirionInit()
 
 void sensorInit()
 {
-// HONEYWELL
+  // HONEYWELL
   Serial.println("-->[HPMA]  starting hpma115S0 sensor..");
   delay(100);
-  Device1.begin(9600); Device1.println();
+  Device1.begin(9600);
+  Device1.println();
   delay(100);
-// PANASONIC
+  // PANASONIC
   Serial.println("-->[SN]    starting SN-GCJA5 sensor..");
   delay(100);
-  hpmaSerial.begin(9600,SERIAL_8N1,pin_rx4,pin_tx4);
+  hpmaSerial.begin(9600, SERIAL_8N1, pin_rx4, pin_tx4);
   delay(100);
-//PMSA003
+  //PMSA003
   Serial.println("-->[PMS]   starting PMSA003 sensor..");
   delay(100);
-  Device2.begin(9600); Device2.println();
+  Device2.begin(9600);
+  Device2.println();
   delay(100);
-//PMS7003
+  //PMS7003
   Serial.println("-->[PMS]   starting PMS7003 sensor..");
   delay(100);
-  Device3.begin(9600); Device3.println();
+  Device3.begin(9600);
+  Device3.println();
   delay(100);
-//#else //SENSIRION
+  //#else //SENSIRION
   SensirionInit();
   delay(100);
 }
@@ -197,57 +200,60 @@ void wrongDataState()
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAverage(apm25);
   gui.displaySensorData(0, 0, chargeLevel, 0.0, 0.0, 0);
-//#ifdef HONEYWELL
+  //#ifdef HONEYWELL
   Serial.println("-->[E][Sensor] !wrong data!");
 
   ////////////////////
-  Serial.print(v25.size());   // Show numsensor like v25
-  v25.push_back(pm25);   //!!!!!!!!!!Definir num
+  Serial.print(v25.size()); // Show numsensor like v25
+  v25.push_back(pm25);      //!!!!!!!!!!Definir num
   v10.push_back(pm10);
-  Serial.print(v25.size());  // Show numsensor like v25
+  Serial.print(v25.size()); // Show numsensor like v25
   ///////////////////
-  switch (numsensor-1) {
-  
-  case 0:  // HONEYWELL
+  switch (numsensor - 1)
+  {
+
+  case 0: // HONEYWELL
     Device1.end();
     Serial.println("-->[E][HPMA] !error reading data!");
     delay(100);
-    Device1.begin(9600); Device1.println();
+    Device1.begin(9600);
+    Device1.println();
     delay(100);
-  break;
+    break;
 
-  case 1:  // PANASONIC
-    hpmaSerial.end();  
+  case 1: // PANASONIC
+    hpmaSerial.end();
     Serial.println("-->[E][SNGCJA5] !error reading data!");
     delay(100);
-    hpmaSerial.begin(9600,SERIAL_8N1,pin_rx4,pin_tx4);
+    hpmaSerial.begin(9600, SERIAL_8N1, pin_rx4, pin_tx4);
     delay(100);
-  break;
-  
-  case 2:  //PMS7003
+    break;
+
+  case 2: //PMS7003
     Device2.end();
     Serial.println("-->[E][PMS7003] !error reading data!");
     delay(100);
-    Device1.begin(9600); Device1.println();
+    Device1.begin(9600);
+    Device1.println();
     delay(100);
-  break;
+    break;
 
-  case 3:  // PMSA003
+  case 3: // PMSA003
     Device3.end();
     Serial.println("-->[E][PMSA003] !error reading data!");
     delay(100);
-    Device1.begin(9600); Device1.println();
+    Device1.begin(9600);
+    Device1.println();
     delay(100);
-  break;
+    break;
 
-  case -1:  // SPS30
+  case -1: // SPS30
     Serial.println("-->[E][SPS30] !error reading data!");
     delay(100);
     SensirionInit();
     delay(100);
-  break;
-
- }
+    break;
+  }
   statusOff(bit_sensor);
   delay(500);
 }
@@ -260,34 +266,35 @@ void saveDataForAverage(unsigned int pm25, unsigned int pm10)
 {
   v25.push_back(pm25);
   v10.push_back(pm10);
-  
-  switch (numsensor-1) {
-  
-  case 0:  // HONEYWELL
+
+  switch (numsensor - 1)
+  {
+
+  case 0: // HONEYWELL
     v250.push_back(pm25);
     //v100.push_back(pm10);
-  break;
+    break;
 
-  case 1:  // PANASONIC
+  case 1: // PANASONIC
     v251.push_back(pm25);
-    //v101.push_back(pm10);    
-  break;
-  
-  case 2:  //PMS7003
+    //v101.push_back(pm10);
+    break;
+
+  case 2: //PMS7003
     v252.push_back(pm25);
     //v102.push_back(pm10);
-  break;
+    break;
 
-  case 3:  // PMSA003
+  case 3: // PMSA003
     v253.push_back(pm25);
     //v103.push_back(pm10);
-  break;
+    break;
 
-  case -1:  // SPS30
+  case -1: // SPS30
     v254.push_back(pm25);
     //v104.push_back(pm10);
-  break;
- }
+    break;
+  }
 }
 
 unsigned int getPM25Average()
@@ -306,41 +313,42 @@ unsigned int getPM10Average()
 
 void averageLoop()
 {
- // if (v25.size() >= cfg.stime)
-  if (v25.size() >= cfg.stime*5)   //////////// 5 sensors
+  // if (v25.size() >= cfg.stime)
+  if (v25.size() >= cfg.stime * 5) //////////// 5 sensors
   {
     apm25 = getPM25Average(); // global var for display
     apm10 = getPM10Average();
     v25.clear();
 
-  switch (numsensor-1) {
+    switch (numsensor - 1)
+    {
 
-  case 0:  // HONEYWELL
-    apm250 = accumulate(v250.begin(), v250.end(), 0.0) / v250.size();
-    v250.clear();
-  break;
+    case 0: // HONEYWELL
+      apm250 = accumulate(v250.begin(), v250.end(), 0.0) / v250.size();
+      v250.clear();
+      break;
 
-  case 1:  // PANASONIC
-    apm251 = accumulate(v251.begin(), v251.end(), 0.0) / v251.size();
-    v251.clear();
-  break;
+    case 1: // PANASONIC
+      apm251 = accumulate(v251.begin(), v251.end(), 0.0) / v251.size();
+      v251.clear();
+      break;
 
-  case 2:  //PMS7003
-    apm252 = accumulate(v251.begin(), v251.end(), 0.0) / v251.size();
-    v252.clear();
-  break;
+    case 2: //PMS7003
+      apm252 = accumulate(v251.begin(), v251.end(), 0.0) / v251.size();
+      v252.clear();
+      break;
 
-  case 3:  // PMSA003
-    apm253 = accumulate(v253.begin(), v253.end(), 0.0) / v253.size();
-    v253.clear();
-  break;
-  
-  case -1:  // SPS30
-    apm254 = accumulate(v254.begin(), v254.end(), 0.0) / v254.size();
-    v254.clear();
-  break;
+    case 3: // PMSA003
+      apm253 = accumulate(v253.begin(), v253.end(), 0.0) / v253.size();
+      v253.clear();
+      break;
+
+    case -1: // SPS30
+      apm254 = accumulate(v254.begin(), v254.end(), 0.0) / v254.size();
+      v254.clear();
+      break;
+    }
   }
-}
 }
 
 char getLoaderChar()
@@ -363,39 +371,80 @@ void showValues(int pm25, int pm10)
 
 void sensorLoop()
 {
- int try_sensor_read = 0;
- String txtMsg = "";
- switch (numsensor) {
-  
-  case 0:  // HONEYWELL
-    numsensor = numsensor + 1;
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
+  int try_sensor_read = 0;
+  String txtMsg = "";
+  switch (numsensor)
   {
-    while (Device1.available() > 0)
+
+  case 0: // HONEYWELL
+    numsensor = numsensor + 1;
+    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
     {
-      char inChar = Device1.read();
-      txtMsg += inChar;
+      while (Device1.available() > 0)
+      {
+        char inChar = Device1.read();
+        txtMsg += inChar;
+        Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
+      }
       Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
     }
-    Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
-  }
-  if (try_sensor_read > SENSOR_RETRY)
-  {
-    setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[HPMA] read > fail!");
-    Serial.println("-->[E][HPMA] disconnected ?");
-    delay(500); // waiting for sensor..
-  }
-
-  if (txtMsg[0] == 66)
-  {
-    if (txtMsg[1] == 77)
+    if (try_sensor_read > SENSOR_RETRY)
     {
-      Serial.print("-->[HPMA115] read > done!");
+      setErrorCode(ecode_sensor_timeout);
+      Serial.println("-->[HPMA] read > fail!");
+      Serial.println("-->[E][HPMA] disconnected ?");
+      delay(500); // waiting for sensor..
+    }
+
+    if (txtMsg[0] == 66)
+    {
+      if (txtMsg[1] == 77)
+      {
+        Serial.print("-->[HPMA115] read > done!");
+        statusOn(bit_sensor);
+        pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+        pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+        if (pm25 < 1000 && pm10 < 1000)
+        {
+          showValues(pm25, pm10);
+        }
+        else
+          wrongDataState();
+      }
+      else
+        wrongDataState();
+    }
+    else
+      wrongDataState();
+    break;
+
+  case 1: // PANASONIC
+    numsensor = numsensor + 1;
+    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
+    {
+      while (hpmaSerial.available() > 0)
+      {
+        char inChar = hpmaSerial.read();
+        txtMsg += inChar;
+        Serial.print("-->[SNGCJA5] read " + String(getLoaderChar()) + "\r");
+      }
+      Serial.print("-->[SNGCJA5] read " + String(getLoaderChar()) + "\r");
+    }
+    if (try_sensor_read > SENSOR_RETRY)
+    {
+      setErrorCode(ecode_sensor_timeout);
+      Serial.println("-->[SNGCJA5] read > fail!");
+      Serial.println("-->[E][SNGCJA5] disconnected ?");
+      delay(500); // waiting for sensor..
+    }
+
+    if (txtMsg[0] == 02)
+    {
+      Serial.print("-->[SNGCJA5] read > done!");
       statusOn(bit_sensor);
-      pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if (pm25 < 1000 && pm10 < 1000)
+      pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
+      pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
+      if (pm25 < 2000 && pm10 < 2000)
       {
         showValues(pm25, pm10);
       }
@@ -404,183 +453,141 @@ void sensorLoop()
     }
     else
       wrongDataState();
-  }
-  else
-    wrongDataState();
-  break;
 
-  case 1:  // PANASONIC
+    break;
+
+  case 2: //PMSA003
     numsensor = numsensor + 1;
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
-  {
-    while (hpmaSerial.available() > 0)
+    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
     {
-      char inChar = hpmaSerial.read();
-      txtMsg += inChar;
-      Serial.print("-->[SNGCJA5] read " + String(getLoaderChar()) + "\r");
+      while (Device2.available() > 0)
+      {
+        char inChar = Device2.read();
+        txtMsg += inChar;
+        Serial.print("-->[PMSA003] read " + String(getLoaderChar()) + "\r");
+      }
+      Serial.print("-->[PMSA003] read " + String(getLoaderChar()) + "\r");
     }
-    Serial.print("-->[SNGCJA5] read " + String(getLoaderChar()) + "\r");
-  }
-  if (try_sensor_read > SENSOR_RETRY)
-  {
-    setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[SNGCJA5] read > fail!");
-    Serial.println("-->[E][SNGCJA5] disconnected ?");
-    delay(500); // waiting for sensor..
-  }
+    if (try_sensor_read > SENSOR_RETRY)
+    {
+      setErrorCode(ecode_sensor_timeout);
+      Serial.println("-->[PMSA003] read > fail!");
+      Serial.println("-->[E][PMSA003] disconnected ?");
+      delay(500); // waiting for sensor..
+    }
 
-  if (txtMsg[0] == 02)
-  {
-    Serial.print("-->[SNGCJA5] read > done!");
+    if (txtMsg[0] == 66)
+    {
+      if (txtMsg[1] == 77)
+      {
+        Serial.print("-->[PMSA003] read > done!");
+        statusOn(bit_sensor);
+        pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+        pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+        if (pm25 < 1000 && pm10 < 1000)
+        {
+          showValues(pm25, pm10);
+        }
+        else
+          wrongDataState();
+      }
+      else
+        wrongDataState();
+    }
+    else
+      wrongDataState();
+    break;
+
+  case 3: // PMS7003
+    numsensor = numsensor + 1;
+    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
+    {
+      while (Device3.available() > 0)
+      {
+        char inChar = Device3.read();
+        txtMsg += inChar;
+        Serial.print("-->[PMS7003] read " + String(getLoaderChar()) + "\r");
+      }
+      Serial.print("-->[PMS7003] read " + String(getLoaderChar()) + "\r");
+    }
+    if (try_sensor_read > SENSOR_RETRY)
+    {
+      setErrorCode(ecode_sensor_timeout);
+      Serial.println("-->[PMS7003] read > fail!");
+      Serial.println("-->[E][PMS7003] disconnected ?");
+      delay(500); // waiting for sensor..
+    }
+
+    if (txtMsg[0] == 66)
+    {
+      if (txtMsg[1] == 77)
+      {
+        Serial.print("-->[PMS7003] read > done!");
+        statusOn(bit_sensor);
+        pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+        pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+        if (pm25 < 1000 && pm10 < 1000)
+        {
+          showValues(pm25, pm10);
+        }
+        else
+          wrongDataState();
+      }
+      else
+        wrongDataState();
+    }
+    else
+      wrongDataState();
+    break;
+
+  case 4:      // SPS30
+    delay(35); //Delay for sincronization
+    numsensor = 0;
+    // loop to get data
+    do
+    {
+      ret = sps30.GetValues(&val);
+
+      //  Serial.println(sizeof(struct sps_values));
+      // data might not have been ready
+      if (ret == ERR_DATALENGTH)
+      {
+        if (error_cnt++ > 3)
+        {
+          ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
+          Serial.println("error cnt");
+          wrongDataState();
+          return;
+        }
+        delay(1000);
+      }
+      // if other error
+      else if (ret != ERR_OK)
+      {
+        ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
+        Serial.println("error else if");
+        wrongDataState();
+        return;
+      }
+    } while (ret != ERR_OK);
+
+    Serial.print("-->[SPS30]   read > done!");
     statusOn(bit_sensor);
-    pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
-    pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
-    if (pm25 < 2000 && pm10 < 2000)
+
+    pm25 = round(val.MassPM2);
+    pm10 = round(val.MassPM10);
+
+    if (pm25 < 1000 && pm10 < 1000)
     {
       showValues(pm25, pm10);
     }
     else
+    {
       wrongDataState();
-  }
-  else
-    wrongDataState();
-  
-  break;
- 
- case 2:  //PMSA003
-    numsensor = numsensor + 1;
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
-  {
-    while (Device2.available() > 0)
-    {
-      char inChar = Device2.read();
-      txtMsg += inChar;
-      Serial.print("-->[PMSA003] read " + String(getLoaderChar()) + "\r");
     }
-    Serial.print("-->[PMSA003] read " + String(getLoaderChar()) + "\r");
+
+    break;
   }
-  if (try_sensor_read > SENSOR_RETRY)
-  {
-    setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[PMSA003] read > fail!");
-    Serial.println("-->[E][PMSA003] disconnected ?");
-    delay(500); // waiting for sensor..
-  }
-
-  if (txtMsg[0] == 66)
-  {
-    if (txtMsg[1] == 77)
-    {
-      Serial.print("-->[PMSA003] read > done!");
-      statusOn(bit_sensor);
-      pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if (pm25 < 1000 && pm10 < 1000)
-      {
-        showValues(pm25, pm10);
-      }
-      else
-        wrongDataState();
-    }
-    else
-      wrongDataState();
-  }
-  else
-    wrongDataState();
-  break;
-
-  case 3:  // PMS7003
-    numsensor = numsensor + 1;
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
-  {
-    while (Device3.available() > 0)
-    {
-      char inChar = Device3.read();
-      txtMsg += inChar;
-      Serial.print("-->[PMS7003] read " + String(getLoaderChar()) + "\r");
-    }
-    Serial.print("-->[PMS7003] read " + String(getLoaderChar()) + "\r");
-  }
-  if (try_sensor_read > SENSOR_RETRY)
-  {
-    setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[PMS7003] read > fail!");
-    Serial.println("-->[E][PMS7003] disconnected ?");
-    delay(500); // waiting for sensor..
-  }
-
-  if (txtMsg[0] == 66)
-  {
-    if (txtMsg[1] == 77)
-    {
-      Serial.print("-->[PMS7003] read > done!");
-      statusOn(bit_sensor);
-      pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if (pm25 < 1000 && pm10 < 1000)
-      {
-        showValues(pm25, pm10);
-      }
-      else
-        wrongDataState();
-    }
-    else
-      wrongDataState();
-  }
-  else
-    wrongDataState();
-  break;
-
-  case 4:  // SPS30
-  delay(35); //Delay for sincronization
-  numsensor = 0;
-  // loop to get data
-  do
-  {
-    ret = sps30.GetValues(&val);
-
-  //  Serial.println(sizeof(struct sps_values));
-    // data might not have been ready
-    if (ret == ERR_DATALENGTH)
-    {
-      if (error_cnt++ > 3)
-      {
-        ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-          Serial.println("error cnt");
-        wrongDataState();
-        return;
-      }
-      delay(1000);
-    }
-    // if other error
-    else if (ret != ERR_OK)
-    {
-      ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-      Serial.println("error else if");
-      wrongDataState();
-      return;
-    }
-  } while (ret != ERR_OK);
-
-  Serial.print("-->[SPS30]   read > done!");
-  statusOn(bit_sensor);
-
-  pm25 = round(val.MassPM2);
-  pm10 = round(val.MassPM10);
-
-  if (pm25 < 1000 && pm10 < 1000)
-  {
-    showValues(pm25, pm10);
-  }
-  else
-  {
-    wrongDataState();
-  }
-
-  break;
-
- }
-
 }
 
 void statusLoop()
@@ -593,8 +600,8 @@ void statusLoop()
     wifiCheck();
   }
   gui.updateError(getErrorCode());
- 
-  gui.displayStatus(wifiOn, true, false, dataSendToggle);
+
+  gui.displayStatus(wifiOn, true, deviceConnected, dataSendToggle);
 
   if (triggerSaveIcon++ < 3)
     gui.displayPrefSaveIcon(true);
@@ -1141,9 +1148,9 @@ void setup()
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
-  
-  bleServerInit();              //    !!!!!!!!!!!!!!!!!!!!!!!!!
-  
+
+  bleServerInit(); //    !!!!!!!!!!!!!!!!!!!!!!!!!
+
   gui.welcomeAddMessage("GATT server..");
   if (cfg.ssid.length() > 0)
     gui.welcomeAddMessage("WiFi:" + cfg.ssid);
@@ -1167,8 +1174,8 @@ void loop()
   humidityLoop(); // read AM2320
   batteryloop();  // battery charge status
 
-  bleLoop();      // notify data to connected devices   !!!!!!!!!!!!!!!!!
-  
+  bleLoop(); // notify data to connected devices   !!!!!!!!!!!!!!!!!
+
   wifiLoop();     // check wifi and reconnect it
   apiLoop();      // CanAir.io API publication
   influxDbLoop(); // influxDB publication
