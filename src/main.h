@@ -7,13 +7,27 @@ HPMA115S0 hpma115S0(hpmaSerial);
 //HardwareSerial hpmaSerial2(2);
 //HPMA115S0 hpma115S0_2(hpmaSerial2);
 
-vector<unsigned int> v25; // for average
-vector<unsigned int> v10; // for average
+vector<unsigned int> v25; // for average PMS7003
+vector<unsigned int> v10; // for average PMS7003
 unsigned int apm25 = 0;   // last PM2.5 average
 unsigned int apm10 = 0;   // last PM10 average
 unsigned int pm25 = 0;
 unsigned int pm10 = 0;
 #define SENSOR_RETRY 1000 // Sensor read retry
+
+vector<unsigned int> v250; // for average Honeywell
+vector<unsigned int> v251; // for average Panasonic
+vector<unsigned int> v252; // for average PMS7003
+vector<unsigned int> v253; // for average PMSA003
+vector<unsigned int> v254; // for average SPS30
+
+unsigned int apm250 = 0;
+unsigned int apm251 = 0;
+unsigned int apm252 = 0;
+unsigned int apm253 = 0;
+unsigned int apm254 = 0;
+
+int numsensor = 0;
 
 // Sensirion SPS30 sensor
 #define SP30_COMMS SERIALPORT2 // UART OR I2C
@@ -39,7 +53,6 @@ bool dataSendToggle;
 bool wifiOn;
 int rssi = 0;
 
-/*
 // Bluetooth fields
 BLEServer *pServer = NULL;
 BLECharacteristic *pCharactData = NULL;
@@ -49,7 +62,6 @@ bool oldDeviceConnected = false;
 #define SERVICE_UUID "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_DATA_UUID "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_CONFIG_UUID "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
-*/
 
 // CanAirIO API fields
 CanAirIoApi api(false);
