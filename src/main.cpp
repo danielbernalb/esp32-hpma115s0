@@ -80,10 +80,10 @@ SoftwareSerial Device2(pin_rx2, pin_tx2);
 SoftwareSerial Device3(pin_rx3, pin_tx3);
 //SoftwareSerial Device4(pin_rx4, pin_tx4);
 
-int pm251 = 0; // PM2.5 Software Serial 1
-int pm252 = 0; // PM2.5 Software Serial 2
-int pm254 = 0; // PM2.5 Software Serial 3
-int pm255 = 0; // PM2.5 Software Serial 4
+//int pm251 = 0; // PM2.5 Software Serial 1
+//int pm252 = 0; // PM2.5 Software Serial 2
+//int pm254 = 0; // PM2.5 Software Serial 3
+//int pm255 = 0; // PM2.5 Software Serial 4
 
 SPS30 sps30;
 
@@ -208,16 +208,25 @@ void wrongDataState()
   switch (numsensor - 1)
   {
 
-  case 0: // HONEYWELL
-    Device1.end();
-    Serial.println("-->[E][HPMA] !error reading data!");
+ case 0: //PMS7003
+    Device3.end();
+    Serial.println("-->[E][PMS7003] !error reading data!");
     delay(100);
-    Device1.begin(9600);
-    Device1.println();
+    Device3.begin(9600);
+    Device3.println();
     delay(100);
     break;
 
-  case 1: // PANASONIC
+  case 1: // PMSA003
+    Device2.end();
+    Serial.println("-->[E][PMSA003] !error reading data!");
+    delay(100);
+    Device2.begin(9600);
+    Device2.println();
+    delay(100);
+    break;
+
+  case 2: // PANASONIC
     hpmaSerial.end();
     Serial.println("-->[E][SNGCJA5] !error reading data!");
     delay(100);
@@ -225,18 +234,9 @@ void wrongDataState()
     delay(100);
     break;
 
-  case 2: //PMS7003
-    Device2.end();
-    Serial.println("-->[E][PMS7003] !error reading data!");
-    delay(100);
-    Device1.begin(9600);
-    Device1.println();
-    delay(100);
-    break;
-
-  case 3: // PMSA003
-    Device3.end();
-    Serial.println("-->[E][PMSA003] !error reading data!");
+  case 3: // HONEYWELL
+    Device1.end();
+    Serial.println("-->[E][HPMA] !error reading data!");
     delay(100);
     Device1.begin(9600);
     Device1.println();
@@ -249,6 +249,7 @@ void wrongDataState()
     SensirionInit();
     delay(100);
     break;
+
   }
   statusOff(bit_sensor);
   delay(500);
@@ -317,37 +318,20 @@ void averageLoop()
     apm10 = getPM10Average();
     v25.clear();
 
-//    switch (numsensor - 1)
-//    {
+    apm250 = round(accumulate(v250.begin(), v250.end(), 0.0) / v250.size());
+    v250.clear();
+    apm251 = round(accumulate(v251.begin(), v251.end(), 0.0) / v251.size());
+    v251.clear();
+    apm252 = round(accumulate(v252.begin(), v252.end(), 0.0) / v252.size());
+    v252.clear();
+    apm253 = round(accumulate(v253.begin(), v253.end(), 0.0) / v253.size());
+    v253.clear();
 
-//    case 0: // PMS7003
-      apm250 = round(accumulate(v250.begin(), v250.end(), 0.0) / v250.size());
-      v250.clear();
-//      break;
+    apm254 = round(accumulate(v254.begin(), v254.end(), 0.0) / v254.size());
+    v254.clear();
+    apm254f = accumulate(v254f.begin(), v254f.end(), 0.0) / v254f.size();
+    v254f.clear();
 
-//    case 1: // PMSA003
-      apm251 = round(accumulate(v251.begin(), v251.end(), 0.0) / v251.size());
-      v251.clear();
-//      break;
-
-//    case 2: // PANASONIC
-      apm252 = round(accumulate(v252.begin(), v252.end(), 0.0) / v252.size());
-      v252.clear();
-//      break;
-
-//    case 3: // HONEYWELL
-      apm253 = round(accumulate(v253.begin(), v253.end(), 0.0) / v253.size());
-      v253.clear();
-//      break;
-
-//    case -1: // SPS30
-      apm254 = round(accumulate(v254.begin(), v254.end(), 0.0) / v254.size());
-      v254.clear();
-      apm254f = accumulate(v254f.begin(), v254f.end(), 0.0) / v254f.size();
-      v254f.clear();
-//    
-//      break;
-//    }
     apm25 = apm253;     // PM2.5 HONEYWELL
     apm10 = apm250;     // PM2.5 PMS7003 
     cfg.lat = apm251;   // PM2.5 PMSA003
@@ -581,9 +565,9 @@ void sensorLoop()
     Serial.print("-->[SPS30]   read > done!");
     statusOn(bit_sensor);
 
-    pm25f = val.MassPM2;
     pm25 = round(val.MassPM2);
     pm10 = round(val.MassPM10);
+    pm25f = val.MassPM2;
 
     if (pm25 < 1000 && pm10 < 1000)
     {
@@ -591,9 +575,6 @@ void sensorLoop()
 
        gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
        gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
-       //
-       Serial.println(pm25f);
-       //
        gui.displayLiveIcon();
        saveDataForAverage(pm25, pm10, pm25f);
     }
@@ -771,26 +752,25 @@ void apiLoop()
     bool status = api.write(0, apm25, apm10, humi, temp, cfg.lat, cfg.lon, cfg.alt, cfg.spd, cfg.stime);
     int code = api.getResponse();
 
-    //
-    Serial.println("");
-    Serial.print(apm25);
-    Serial.print(" ");
-    Serial.print(apm10);
-    Serial.print(" ");
-    Serial.print(cfg.lat);
-    Serial.print(" ");
-    Serial.print(cfg.lon);
-    Serial.print(" ");
-    Serial.println(cfg.alt);
-    Serial.print(" ");
-    Serial.println(cfg.spd);    
-    //
-
     if (status)
     {
       Serial.println("done. [" + String(code) + "]");
       statusOn(bit_cloud);
       dataSendToggle = true;
+      //
+      Serial.println("");
+      Serial.print(apm25);
+      Serial.print(" ");
+      Serial.print(apm10);
+      Serial.print(" ");
+      Serial.print(cfg.lat);
+      Serial.print(" ");
+      Serial.print(cfg.lon);
+      Serial.print(" ");
+      Serial.print(cfg.alt);
+      Serial.print(" ");
+      Serial.println(cfg.spd);    
+      //
     }
     else
     {
@@ -841,22 +821,6 @@ void influxDbParseFields(char *fields)
       fields,
       "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
       0, apm25, apm10, humi, temp, cfg.lat, cfg.lon, cfg.alt, cfg.spd, cfg.stime, 0);
-
-    //
-    Serial.println("");
-    Serial.print(apm25);
-    Serial.print(" ");
-    Serial.print(apm10);
-    Serial.print(" ");
-    Serial.print(cfg.lat);
-    Serial.print(" ");
-    Serial.print(cfg.lon);
-    Serial.print(" ");
-    Serial.println(cfg.alt);
-    Serial.print(" ");
-    Serial.println(cfg.spd);    
-    //
-
 }
 
 void influxDbAddTags(char *tags)
