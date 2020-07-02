@@ -13,6 +13,7 @@ unsigned int apm25 = 0;   // last PM2.5 average
 unsigned int apm10 = 0;   // last PM10 average
 unsigned int pm25 = 0;
 unsigned int pm10 = 0;
+float pm25f = 0.0;
 #define SENSOR_RETRY 1000 // Sensor read retry
 
 vector<unsigned int> v250; // for average Honeywell
@@ -20,12 +21,14 @@ vector<unsigned int> v251; // for average Panasonic
 vector<unsigned int> v252; // for average PMS7003
 vector<unsigned int> v253; // for average PMSA003
 vector<unsigned int> v254; // for average SPS30
+vector<float> v254f; // for average SPS30
 
 unsigned int apm250 = 0;
 unsigned int apm251 = 0;
 unsigned int apm252 = 0;
 unsigned int apm253 = 0;
 unsigned int apm254 = 0;
+float apm254f = 0;
 
 int numsensor = 0;
 
