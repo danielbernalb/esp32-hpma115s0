@@ -758,7 +758,7 @@ void apiLoop()
       statusOn(bit_cloud);
       dataSendToggle = true;
       //
-      Serial.println("");
+      Serial.print("Data stored: ");
       Serial.print(apm25);
       Serial.print(" ");
       Serial.print(apm10);
