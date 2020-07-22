@@ -633,7 +633,10 @@ void getHumidityRead()
   if (isnan(humi))
     humi = 0.0;
   if (isnan(temp))
+  {
     temp = 0.0;
+    am2320.begin();
+  }
   Serial.println("-->[AM2320]  Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
 }
 
