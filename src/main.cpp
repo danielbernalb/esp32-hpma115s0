@@ -113,24 +113,18 @@ void sensorConfig()
 #endif
 */
 
-void ErrtoMess(char *mess, uint8_t r)
-{
+void ErrtoMess(char *mess, uint8_t r){
   char buf[80];
   Serial.print(mess);
   sps30.GetErrDescription(r, buf, 80);
   Serial.println(buf);
 }
 
-void Errorloop(char *mess, uint8_t r)
-{
-  if (r)
-    ErrtoMess(mess, r);
-  else
-    Serial.println(mess);
-  Serial.println(F("-->[E][SPS30] !error reading data!"));
-  //for(;;) delay(100000);
-  //for (;;)
-  delay(500);
+void Errorloop(char *mess, uint8_t r){
+  if (r) ErrtoMess(mess, r);
+  else Serial.println(mess);
+  setErrorCode(ecode_sensor_timeout);
+  delay(500); // waiting for sensor..
 }
 
 void SensirionInit()
@@ -978,92 +972,65 @@ void wifiRestart()
   wifiInit();
 }
 
-void wifiLoop()
-{
-  if (v25.size() == 0 && cfg.wifiEnable && cfg.ssid.length() > 0 && !wifiCheck())
-  {
+void wifiLoop(){
+  wifiRSSI();
+  if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
     wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     influxDbInit();
     apiInit();
   }
 }
 
-void resetLoop()
-{
+void wifiRSSI(){
   if (wifiOn)
-  {
     rssi = WiFi.RSSI();
-//    if (resetvar == 1199)
-    if (resetvar == 1799)
-    {
-      resetvar = 0;
-      delay(45000); // 45 seconds, reset at 30 seconds
-    }
-    resetvar = resetvar + 1;
-  }
   else
-  {
     rssi = 0;
-  }
 }
 
 /******************************************************************************
 *   B L U E T O O T H  M E T H O D S
 ******************************************************************************/
+class MyServerCallbacks: public BLEServerCallbacks {
+	void onConnect(BLEServer* pServer) {
+      Serial.println("-->[BLE] onConnect");
+      statusOn(bit_paired);
+      deviceConnected = true;
+    };
 
-class MyServerCallbacks : public BLEServerCallbacks
-{
-  void onConnect(BLEServer *pServer)
-  {
-    Serial.println("-->[BLE] onConnect");
-    statusOn(bit_paired);
-    deviceConnected = true;
-  };
-
-  void onDisconnect(BLEServer *pServer)
-  {
-    Serial.println("-->[BLE] onDisconnect");
-    statusOff(bit_paired);
-    deviceConnected = false;
-  };
+    void onDisconnect(BLEServer* pServer) {
+      Serial.println("-->[BLE] onDisconnect");
+      statusOff(bit_paired);
+      deviceConnected = false;
+    };
 }; // BLEServerCallbacks
 
-class MyConfigCallbacks : public BLECharacteristicCallbacks
-{
-  void onWrite(BLECharacteristic *pCharacteristic)
-  {
-    std::string value = pCharacteristic->getValue();
-    if (value.length() > 0)
-    {
-      if (cfg.save(value.c_str()))
-      {
-        triggerSaveIcon = 0;
-        cfg.reload();
-        if (cfg.isNewWifi)
-        {
-          wifiRestart();
-          apiInit();
-          influxDbInit();
+class MyConfigCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      if (value.length() > 0) {
+        if(cfg.save(value.c_str())){
+          triggerSaveIcon=0;
+          cfg.reload();
+          if(cfg.isNewWifi){
+            wifiRestart();
+            apiInit();
+            influxDbInit();
+          }
+          if(cfg.isNewIfxdbConfig) influxDbInit();
+          if(cfg.isNewAPIConfig) apiInit();
+          if(!cfg.wifiEnable) wifiStop();
         }
-        if (cfg.isNewIfxdbConfig)
-          influxDbInit();
-        if (cfg.isNewAPIConfig)
-          apiInit();
-        if (!cfg.wifiEnable)
-          wifiStop();
+        else{
+          setErrorCode(ecode_invalid_config);
+        }
+        pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
+        pCharactData->setValue(getSensorData().c_str());
       }
-      else
-      {
-        setErrorCode(ecode_invalid_config);
-      }
-      pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-      pCharactData->setValue(getSensorData().c_str());
     }
-  }
 };
 
-void bleServerInit()
-{
+void bleServerInit(){
   // Create the BLE Device
   BLEDevice::init("ESP32_HPMA115S0");
   // Create the BLE Server
@@ -1074,11 +1041,13 @@ void bleServerInit()
   // Create a BLE Characteristic for PM 2.5
   pCharactData = pService->createCharacteristic(
       CHARAC_DATA_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+  );
   // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
   pCharactConfig = pService->createCharacteristic(
       CHARAC_CONFIG_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+  );
   // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
   // Saved current sensor data
@@ -1094,29 +1063,39 @@ void bleServerInit()
   Serial.println("-->[BLE] GATT server ready. (Waiting for client)");
 }
 
-void bleLoop()
-{
+void bleLoop(){
   // notify changed value
-  if (deviceConnected && v25.size() == 0)
-  { // v25 test for get each ~5 sec aprox
+  if (deviceConnected && v25.size()==0) { // v25 test for get each ~5 sec aprox
     Serial.println("-->[BLE] sending notification..");
-    pCharactData->setValue(getNotificationData().c_str()); // small payload for notification
+    pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
     pCharactData->notify();
-    pCharactData->setValue(getSensorData().c_str()); // load big payload for possible read
+    pCharactData->setValue(getSensorData().c_str());        // load big payload for possible read
   }
   // disconnecting
-  if (!deviceConnected && oldDeviceConnected)
-  {
-    delay(500);                  // give the bluetooth stack the chance to get things ready
+  if (!deviceConnected && oldDeviceConnected) {
+    delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
     Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
   }
   // connecting
-  if (deviceConnected && !oldDeviceConnected)
-  {
+  if (deviceConnected && !oldDeviceConnected) {
     // do stuff here on connecting
     oldDeviceConnected = deviceConnected;
+  }
+}
+
+/******************************************************************************
+*   R E S E T
+******************************************************************************/
+
+void resetLoop(){
+  if (wifiOn){    
+        if (resetvar == 1199) {      
+        resetvar = 0;
+        delay(45000);   // 45 seconds, reset at 30 seconds
+    }
+    resetvar = resetvar + 1;
   }
 }
 
@@ -1161,9 +1140,7 @@ void setup()
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
-
-  bleServerInit(); //    !!!!!!!!!!!!!!!!!!!!!!!!!
-
+  bleServerInit();
   gui.welcomeAddMessage("GATT server..");
   if (cfg.ssid.length() > 0)
     gui.welcomeAddMessage("WiFi:" + cfg.ssid);
@@ -1186,9 +1163,7 @@ void loop()
   averageLoop();  // calculated of sensor data average
   humidityLoop(); // read AM2320
   batteryloop();  // battery charge status
-
   bleLoop(); // notify data to connected devices   !!!!!!!!!!!!!!!!!
-
   wifiLoop();     // check wifi and reconnect it
   apiLoop();      // CanAir.io API publication
   influxDbLoop(); // influxDB publication
