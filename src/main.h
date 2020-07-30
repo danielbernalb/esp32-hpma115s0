@@ -57,14 +57,14 @@ bool wifiOn;
 int rssi = 0;
 
 // Bluetooth fields
-BLEServer *pServer = NULL;
-BLECharacteristic *pCharactData = NULL;
-BLECharacteristic *pCharactConfig = NULL;
+BLEServer* pServer = NULL;
+BLECharacteristic* pCharactData = NULL;
+BLECharacteristic* pCharactConfig = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
-#define SERVICE_UUID "c8d1d262-861f-4082-947e-f383a259aaf3"
-#define CHARAC_DATA_UUID "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
-#define CHARAC_CONFIG_UUID "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
+#define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
+#define CHARAC_DATA_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
+#define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
 // CanAirIO API fields
 CanAirIoApi api(false);
@@ -87,7 +87,7 @@ unsigned int resetvar = 0;
 
 // some prototypes
 bool wifiCheck();
-void wifiConnect(const char *ssid, const char *pass);
+void wifiConnect(const char* ssid, const char* pass);
 void wifiInit();
 void wifiStop();
 void wifiRestart();
