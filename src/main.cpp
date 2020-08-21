@@ -965,7 +965,7 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-        if (resetvar == 3599) {      
+        if (resetvar == 17999) {      
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
@@ -991,7 +991,8 @@ void IRAM_ATTR resetModule(){
 void enableWatchdog(){
   timer = timerBegin(0, 80, true);                 // timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true); // setting callback
-  timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
+  //timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
+  timerAlarmWrite(timer, 25000000, false);         // set time in us (30s)
   timerAlarmEnable(timer);                         // enable interrupt
 }
 
