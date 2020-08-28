@@ -1057,7 +1057,6 @@ void loop(){
   otaLoop();       // check for firmware updates
   gui.pageEnd();   // gui changes push
   delay(800);
-#endif
   timerWrite(timer, 0);  //reset timer (feed watchdog)
   resetLoop();     // reset every 20 minutes with Wifion
 }
