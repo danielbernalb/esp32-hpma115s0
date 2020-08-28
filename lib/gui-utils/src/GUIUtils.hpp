@@ -40,6 +40,8 @@ public:
 
   void welcomeAddMessage(String msg);
 
+  void AddMessage(String msg);
+
   void displayCenterBig(String msg);
 
   void displayBottomLine(String msg);

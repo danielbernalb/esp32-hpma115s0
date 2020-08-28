@@ -154,26 +154,31 @@ void sensorInit(){
   delay(100);
   Device1.begin(9600);
   //Device1.println();
-  delay(100);
+  gui.AddMessage("1.");      /////////////////////////
+  delay(200);
   // PANASONIC
   Serial.println("-->[SN]    starting SN-GCJA5 sensor..");
   delay(100);
   hpmaSerial.begin(9600, SERIAL_8N1, pin_rx4, pin_tx4);
-  delay(100);
+  gui.AddMessage("2.");      /////////////////////////
+  delay(200);
   //PMSA003
   Serial.println("-->[PMS]   starting PMSA003 sensor..");
   delay(100);
   Device2.begin(9600);
   //Device2.println();
-  delay(100);
+  gui.AddMessage("3.");      /////////////////////////
+  delay(200);
   //PMS7003
   Serial.println("-->[PMS]   starting PMS7003 sensor..");
   delay(100);
   Device3.begin(9600);
   //Device3.println();
-  delay(100);
+  gui.AddMessage("4.");      /////////////////////////
+  delay(200);
   //#else //SENSIRION
   SensirionInit();
+  gui.welcomeAddMessage("5.");      /////////////////////////
   delay(1000);
 }
 
@@ -965,7 +970,7 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-        if (resetvar == 17999) {      
+        if (resetvar == 899) {      
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
@@ -1017,17 +1022,23 @@ void setup(){
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  gui.welcomeAddMessage("Sensors test..");
-  sensorInit();
+  //gui.welcomeAddMessage("Sensor test..");
+  // sensorInit();
   am2320.begin();
   bleServerInit();
-  gui.welcomeAddMessage("GATT server..");
+  //gui.welcomeAddMessage("GATT server..");
   if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
   else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
-  gui.welcomeAddMessage("CanAirIO API..");
+  gui.welcomeAddMessage("InfluxDB..");
   influxDbInit();
+  gui.welcomeAddMessage("CanAirIO API..");
   apiInit();
+  //
+  //gui.welcomeAddMessage("Sensor test..");
+  sensorInit();
+  delay(1000);
+  //
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
   //enableWatchdog();  // enable timer for reboot in any loop blocker

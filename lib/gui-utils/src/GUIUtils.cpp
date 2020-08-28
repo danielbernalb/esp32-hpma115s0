@@ -68,6 +68,15 @@ void GUIUtils::welcomeAddMessage(String msg)
 #endif
 }
 
+void GUIUtils::AddMessage(String msg)
+{
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.drawStr(7, lastDrawedLine, msg.c_str());
+  u8g2.sendBuffer();
+}
+
+
+
 void GUIUtils::displayCenterBig(String msg)
 {
 #ifndef EMOTICONS
