@@ -26,6 +26,9 @@
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
+
+#include <Adafruit_BME280.h>
+
 #include "main.h"
 #include "status.h"
 
@@ -59,6 +62,10 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
 #endif
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+Adafruit_BME280 bme; // I2C
 
 SPS30 sps30;
 
@@ -354,15 +361,16 @@ String getSensorData(){
 }
 
 void getHumidityRead() {
-  humi = am2320.readHumidity();
-  temp = am2320.readTemperature();
+  humi = bme.readHumidity();
+  temp = bme.readTemperature();
   if (isnan(humi)){
     humi = 0.0;
-    am2320.begin();
+    //am2320.begin();
+    bme.begin(0x76);
   }
   if (isnan(temp))
     temp = 0.0;
-  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+  Serial.println("-->[BME280] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
 }
 
 void humidityLoop(){
@@ -801,7 +809,8 @@ void setup(){
   enableWatchdog();  // enable timer for reboot in any loop blocker
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
-  am2320.begin();
+  //am2320.begin();
+  bme.begin(0x76);
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
   if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
