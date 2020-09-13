@@ -14,14 +14,26 @@ bool WrongSerialData = false;
 #define SENSOR_RETRY  1000     // Sensor read retry
 
 // Sensirion SPS30 sensor
-#define SP30_COMMS SERIALPORT2 // UART OR I2C
+#ifdef SENSIRION
+ #define SP30_COMMS SERIALPORT2 // UART OR I2C
+ SPS30 sps30;
+#endif
 uint8_t ret, error_cnt = 0;
 struct sps_values val;
 
 // Humidity sensor
-Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 
 float temp = 0.0;              // Temperature (°C)
+#ifdef BME280S
+ #define SEALEVELPRESSURE_HPA (1013.25)
+ Adafruit_BME280 bme;           // BME280 I2C
+#elif DHT22S
+ #define DHTTYPE DHT22         // DHT 22 (AM2302)
+ #define DHTPIN 15
+ DHT dht(DHTPIN, DHTTYPE);
+#else
+ Adafruit_AM2320 am2320 = Adafruit_AM2320();
+#endif
 
 // Battery level
 unsigned int chargeLevel = 0;

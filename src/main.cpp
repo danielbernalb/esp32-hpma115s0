@@ -23,12 +23,11 @@
 #include <esp_wifi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
+#include <Adafruit_BME280.h>
+#include <DHT.h>
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
-
-#include <Adafruit_BME280.h>
-
 #include "main.h"
 #include "status.h"
 
@@ -62,12 +61,6 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
 #endif
-
-#define SEALEVELPRESSURE_HPA (1013.25)
-
-Adafruit_BME280 bme; // I2C
-
-SPS30 sps30;
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
@@ -361,16 +354,37 @@ String getSensorData(){
 }
 
 void getHumidityRead() {
+ #ifdef BME280S 
   humi = bme.readHumidity();
   temp = bme.readTemperature();
   if (isnan(humi)){
     humi = 0.0;
-    //am2320.begin();
     bme.begin(0x76);
   }
   if (isnan(temp))
     temp = 0.0;
   Serial.println("-->[BME280] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+ #elif DHT22S
+  humi = dht.readHumidity();
+  temp = dht.readTemperature();
+  if (isnan(humi)){
+    humi = 0.0;
+    dht.begin();
+  }
+  if (isnan(temp))
+    temp = 0.0;
+  Serial.println("-->[DHT22] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+ #else
+  humi = am2320.readHumidity();
+  temp = am2320.readTemperature();
+  if (isnan(humi)){
+    humi = 0.0;
+    am2320.begin();
+  }
+  if (isnan(temp))
+    temp = 0.0;
+  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+ #endif 
 }
 
 void humidityLoop(){
@@ -809,8 +823,13 @@ void setup(){
   enableWatchdog();  // enable timer for reboot in any loop blocker
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
-  //am2320.begin();
-  bme.begin(0x76);
+  #ifdef BME280S
+   bme.begin(0x76);
+  #elif DHT22S
+   dht.begin();
+  #else
+   am2320.begin();
+  #endif
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
   if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
