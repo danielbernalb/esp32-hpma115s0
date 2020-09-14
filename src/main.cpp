@@ -58,8 +58,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13  // config for TTGO_TQ board
 #define HPMA_TX 18
 #else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
+#define HPMA_RX 26  // config for D1MIN1 board
+#define HPMA_TX 25
 #endif
 
 /******************************************************************************

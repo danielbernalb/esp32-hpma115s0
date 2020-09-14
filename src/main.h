@@ -29,7 +29,7 @@ float temp = 0.0;              // Temperature (°C)
  Adafruit_BME280 bme;           // BME280 I2C
 #elif DHT22S
  #define DHTTYPE DHT22         // DHT 22 (AM2302)
- #define DHTPIN 15
+ #define DHTPIN 13
  DHT dht(DHTPIN, DHTTYPE);
 #else
  Adafruit_AM2320 am2320 = Adafruit_AM2320();
