@@ -39,6 +39,9 @@
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board & TTGO18650
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
+//U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 19, 18, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 26, 27, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
@@ -51,6 +54,9 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #ifdef WEMOSOLED
 #define HPMA_RX 13  // config for Wemos board & TTGO18650
 #define HPMA_TX 15  // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
+#elif ESP32DevKit
+#define HPMA_RX 32  // config for ESP32DevKit
+#define HPMA_TX 35
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
 #define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
@@ -391,6 +397,28 @@ void humidityLoop(){
   if (v25.size() == 0){
     getHumidityRead();
   }
+}
+
+void humTempInit(){
+#ifdef ESP32DevKit
+ #ifdef BME280S
+   //Wire.begin(16, 21);   //I2C_SDA, I2C_SCL
+   bme.begin(0x76, 16, 21);
+ #elif DHT22S
+   dht.begin();
+ #else
+   //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
+   Wire.begin(33,25);   //I2C_SDA, I2C_SCL
+ #endif
+#else
+ #ifdef BME280S
+   bme.begin(0x76);
+ #elif DHT22S
+   dht.begin();
+ #else
+   am2320.begin();   //I2C_SDA, I2C_SCL
+ #endif
+#endif
 }
 
 /******************************************************************************
@@ -823,13 +851,7 @@ void setup(){
   enableWatchdog();  // enable timer for reboot in any loop blocker
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
-  #ifdef BME280S
-   bme.begin(0x76);
-  #elif DHT22S
-   dht.begin();
-  #else
-   am2320.begin();
-  #endif
+  humTempInit();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
   if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
