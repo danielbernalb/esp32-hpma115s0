@@ -31,6 +31,9 @@ float temp = 0.0;              // Temperature (°C)
  #define DHTTYPE DHT22         // DHT 22 (AM2302)
  #define DHTPIN 15
  DHT dht(DHTPIN, DHTTYPE);
+#elif AHT10
+ TwoWire I2CBME = TwoWire(0);
+ Adafruit_AHTX0 aht;
 #else
  Adafruit_AM2320 am2320 = Adafruit_AM2320();
 #endif

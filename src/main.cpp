@@ -24,6 +24,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_AHTX0.h>
 #include <DHT.h>
 #include <GUIUtils.hpp>
 #include <vector>
@@ -41,7 +42,7 @@
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
 //U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 19, 18, U8X8_PIN_NONE);
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 26, 27, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 16, 4, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
@@ -55,8 +56,9 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13  // config for Wemos board & TTGO18650
 #define HPMA_TX 15  // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
 #elif ESP32DevKit
-#define HPMA_RX 32  // config for ESP32DevKit
-#define HPMA_TX 35
+//#define HPMA_RX 21  // config for ESP32DevKit
+#define HPMA_RX 17  // config for ESP32DevKit
+#define HPMA_TX 2
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
 #define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
@@ -380,6 +382,12 @@ void getHumidityRead() {
   if (isnan(temp))
     temp = 0.0;
   Serial.println("-->[DHT22] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+ #elif AHT10
+  sensors_event_t humi, temp;
+  aht.getEvent(&humi, &temp);// populate temp and humidity objects with fresh data
+  //Serial.print("Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");
+  //Serial.print("Humidity: "); Serial.print(humi.relative_humidity); Serial.println("% rH");
+  Serial.println("-->[AHT10] Humidity: "+String(humi.relative_humidity)+" % Temp: "+String(temp.temperature)+" °C");
  #else
   humi = am2320.readHumidity();
   temp = am2320.readTemperature();
@@ -406,9 +414,16 @@ void humTempInit(){
    bme.begin(0x76, 16, 21);
  #elif DHT22S
    dht.begin();
+ #elif AHT10
+ I2CBME.begin(18, 19);
+  if (! aht.begin(&I2CBME)) {
+    Serial.println("Could not find AHT? Check wiring");
+    delay(10);
+  }
+  Serial.println("AHT10 found");
  #else
    //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
-   Wire.begin(33,25);   //I2C_SDA, I2C_SCL
+   Wire.begin(18,19);   //I2C_SDA, I2C_SCL
  #endif
 #else
  #ifdef BME280S
