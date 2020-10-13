@@ -41,9 +41,9 @@
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board & TTGO18650
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 16, 4, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 2, 4, U8X8_PIN_NONE);
 #elif ESP32C // display via i2c for ESP32C
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 5, 17, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 2, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
@@ -60,8 +60,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 21  // config for ESP32DevKit
 #define HPMA_TX 2
 #elif ESP32C
-#define HPMA_RX 23  // config for ESP32DevKit
-#define HPMA_TX 22
+#define HPMA_RX 15  // config for ESP32DevKit
+#define HPMA_TX 21
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
 #define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
@@ -435,7 +435,7 @@ void humTempInit(){
  #elif DHT22S
    dht.begin();
  #elif AHT10
- I2CBME.begin(21, 3);
+ I2CBME.begin(23, 22);
   if (! aht.begin(&I2CBME)) {
     Serial.println("Could not find AHT? Check wiring");
     delay(10);
