@@ -102,6 +102,9 @@ void GUIUtils::displayBottomLine(String msg)
 #ifndef EMOTICONS
   u8g2.setCursor(0, 29);
   u8g2.print(msg.c_str());
+#else
+  u8g2.setCursor(0, 50);
+  u8g2.print(msg.c_str());
 #endif
 #endif 
 }

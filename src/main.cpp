@@ -43,7 +43,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 2, 4, U8X8_PIN_NONE);
 #elif ESP32C // display via i2c for ESP32C
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 2, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 15, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
@@ -60,8 +60,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 21  // config for ESP32DevKit
 #define HPMA_TX 2
 #elif ESP32C
-#define HPMA_RX 15  // config for ESP32DevKit
-#define HPMA_TX 21
+#define HPMA_RX 17  // config for ESP32DevKit
+#define HPMA_TX 16
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
 #define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
@@ -386,11 +386,11 @@ void getHumidityRead() {
     temp = 0.0;
   Serial.println("-->[DHT22] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
  #elif AHT10
-  sensors_event_t humi, temp;
-  aht.getEvent(&humi, &temp);// populate temp and humidity objects with fresh data
-  //Serial.print("Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");
-  //Serial.print("Humidity: "); Serial.print(humi.relative_humidity); Serial.println("% rH");
-  Serial.println("-->[AHT10] Humidity: "+String(humi.relative_humidity)+" % Temp: "+String(temp.temperature)+" °C");
+  sensors_event_t humidity, temperature;
+  aht.getEvent(&humidity, &temperature);// populate temp and humidity objects with fresh data
+  humi = humi.relative_humidity;
+  temp = temp.temperature;
+  Serial.println("-->[AHT10] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
  #else
   humi = am2320.readHumidity();
   temp = am2320.readTemperature();
@@ -443,7 +443,7 @@ void humTempInit(){
   Serial.println("AHT10 found");
  #else
    //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
-   Wire.begin(18,19);   //I2C_SDA, I2C_SCL
+   Wire.begin(23,22);   //I2C_SDA, I2C_SCL
  #endif
 #else
  #ifdef BME280S
