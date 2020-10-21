@@ -16,6 +16,7 @@ bool WrongSerialData = false;
 // Sensirion SPS30 sensor
 #ifdef SENSIRION
  #define SP30_COMMS SERIALPORT2 // UART OR I2C
+ #define SP30_COMMS1 Serial1 // UART OR I2C
  SPS30 sps30;
 #endif
 uint8_t ret, error_cnt = 0;
@@ -34,6 +35,7 @@ float temp = 0.0;              // Temperature (°C)
 #elif AHT10
  TwoWire I2CBME = TwoWire(0);
  Adafruit_AHTX0 aht;
+ //Adafruit_Sensor *aht_humidity, *aht_temp;
 #else
  Adafruit_AM2320 am2320 = Adafruit_AM2320();
 #endif
@@ -80,6 +82,23 @@ GUIUtils gui;
 // Watchdog timer
 hw_timer_t *timer = NULL;
 unsigned int resetvar = 0;
+
+// OK para ESP32S 30 pines
+#define OLEDdata 4    // D8
+#define OLEDclock 16  // D7
+#define PINRXSEN 17   // D6
+#define PINTXSEN 5    // D5
+#define HUMSDA 21     // D4
+#define HUMSCL 3      // D3
+
+// OK para ESP32S grande de 38 pines y ESP32DevKitD y U de 38 pines
+#define OLEDdatad 2   // D8
+#define OLEDclockd 0  // D7
+#define PINRXSENd 4   // D6
+#define PINTXSENd 16  // D5
+#define HUMSDAd 18    // D4
+#define HUMSCLd 19    // D3
+
 
 // some prototypes
 bool wifiCheck();

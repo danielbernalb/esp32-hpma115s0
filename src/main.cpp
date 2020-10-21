@@ -41,9 +41,9 @@
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board & TTGO18650
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 2, 4, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, OLEDclockd, OLEDdatad, U8X8_PIN_NONE);
 #elif ESP32C // display via i2c for ESP32C
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 15, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, OLEDclock, OLEDdata, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
@@ -57,11 +57,11 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13  // config for Wemos board & TTGO18650
 #define HPMA_TX 15  // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
 #elif ESP32DevKit
-#define HPMA_RX 21  // config for ESP32DevKit
-#define HPMA_TX 2
+#define HPMA_RX PINRXSENd  // config for ESP32DevKit
+#define HPMA_TX PINTXSENd
 #elif ESP32C
-#define HPMA_RX 17  // config for ESP32DevKit
-#define HPMA_TX 16
+#define HPMA_RX PINRXSEN  // config for ESP32C
+#define HPMA_TX PINTXSEN
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
 #define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
@@ -136,8 +136,9 @@ void sensorInit(){
   #endif
 #else //SENSIRION
 // Begin communication channel
+ SP30_COMMS1.begin(115200, SERIAL_8N1, HPMA_RX, HPMA_TX);
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-  if (sps30.begin(SP30_COMMS) == false){
+  if (sps30.begin(&SP30_COMMS1) == false){
     Errorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
   }
   // check for SPS30 connection
@@ -386,11 +387,9 @@ void getHumidityRead() {
     temp = 0.0;
   Serial.println("-->[DHT22] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
  #elif AHT10
-  sensors_event_t humidity, temperature;
-  aht.getEvent(&humidity, &temperature);// populate temp and humidity objects with fresh data
-  humi = humi.relative_humidity;
-  temp = temp.temperature;
-  Serial.println("-->[AHT10] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+  Serial.println("-->[AHT10] Humidity: "+String(humidity.relative_humidity)+" % Temp: "+String(temp.temperature)+" °C");
  #else
   humi = am2320.readHumidity();
   temp = am2320.readTemperature();
@@ -426,7 +425,7 @@ void humTempInit(){
   Serial.println("AHT10 found");
  #else
    //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
-   Wire.begin(18,19);   //I2C_SDA, I2C_SCL
+   Wire.begin(HUMSDAd,HUMSCLd);   //I2C_SDA, I2C_SCL
  #endif
  #elif ESP32C
  #ifdef BME280S
@@ -443,7 +442,7 @@ void humTempInit(){
   Serial.println("AHT10 found");
  #else
    //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
-   Wire.begin(23,22);   //I2C_SDA, I2C_SCL
+   Wire.begin(HUMSDA,HUMSCL);   //I2C_SDA, I2C_SCL
  #endif
 #else
  #ifdef BME280S
