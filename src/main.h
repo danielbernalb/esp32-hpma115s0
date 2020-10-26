@@ -96,8 +96,10 @@ unsigned int resetvar = 0;
 #define OLEDclockd 0  // D7
 #define PINRXSENd 4   // D6
 #define PINTXSENd 16  // D5
-#define HUMSDAd 18    // D4
-#define HUMSCLd 19    // D3
+//#define HUMSDAd 18    // D4
+//#define HUMSCLd 19    // D3
+#define HUMSDAd 21    // D4
+#define HUMSCLd 3    // D3
 
 
 // some prototypes

@@ -42,7 +42,7 @@
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, OLEDclockd, OLEDdatad, U8X8_PIN_NONE);
-#elif ESP32C // display via i2c for ESP32C
+#elif ESP32S // display via i2c for ESP32S
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, OLEDclock, OLEDdata, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
@@ -59,8 +59,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #elif ESP32DevKit
 #define HPMA_RX PINRXSENd  // config for ESP32DevKit
 #define HPMA_TX PINTXSENd
-#elif ESP32C
-#define HPMA_RX PINRXSEN  // config for ESP32C
+#elif ESP32S
+#define HPMA_RX PINRXSEN  // config for ESP32S
 #define HPMA_TX PINTXSEN
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
@@ -427,7 +427,7 @@ void humTempInit(){
    //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
    Wire.begin(HUMSDAd,HUMSCLd);   //I2C_SDA, I2C_SCL
  #endif
- #elif ESP32C
+#elif ESP32S
  #ifdef BME280S
    //Wire.begin(16, 21);   //I2C_SDA, I2C_SCL
    bme.begin(0x76, 16, 21);
@@ -839,7 +839,7 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-        if (resetvar == 1199) {      
+        if (resetvar == 1799) {      
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
