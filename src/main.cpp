@@ -23,6 +23,7 @@
 #include <esp_wifi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
+#include <Adafruit_SHT31.h>
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
@@ -566,6 +567,16 @@ void getHumidityRead() {
   if (isnan(temp))
     temp = 0.0;
   Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+
+  humiS = sht31.readHumidity();
+  tempS = sht31.readTemperature();
+  if (isnan(humiS)) {
+    humiS = 0.0;
+    sht31.begin(0x44);
+  }
+  if (isnan(tempS)) 
+    tempS = 0.0;
+  Serial.println("-->[SHT31]  Humidity: "+String(humiS)+" % Temp: "+String(tempS)+" °C");
 }
 
 void humidityLoop(){
@@ -666,7 +677,7 @@ void apiLoop() {
   if (v25.size()==0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
-    bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
+    bool status = api.write(0,apm25,apm10,humi,temp,humiS,tempS,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
     int code = api.getResponse();
     if(status) {
       Serial.println("done. ["+String(code)+"]");
@@ -722,14 +733,14 @@ void influxDbInit() {
  * @influxDbParseFields:
  *
  * Supported:
- * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
+ * "id","pm1","pm25","pm10,"hum","tmp","humS","tmpS","lat","lng","alt","spd","stime","tstp"
  *
  */
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
+    "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,humS=%f,tmpS=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+    0,apm25,apm10,humi,temp,humiS,tempS,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
   );
 }
 
@@ -1027,6 +1038,12 @@ void setup(){
   //gui.welcomeAddMessage("Sensor test..");
   // sensorInit();
   am2320.begin();
+  //Serial.println("SHT31 test");
+  sht31.begin(0x44);
+  //if (! sht31.begin(0x44)) {   // Set to 0x45 for alternate i2c addr
+  //    Serial.println("Couldn't find SHT31");
+  //    while (1) delay(1);
+  //  }
   bleServerInit();
   //gui.welcomeAddMessage("GATT server..");
   if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
