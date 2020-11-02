@@ -556,12 +556,16 @@ String getSensorData(){
   return json;
 }
 
-void getHumidityRead(){
+void getHumidityRead() {
   humi = am2320.readHumidity();
   temp = am2320.readTemperature();
-  if (isnan(humi))
+  if (isnan(humi)){
+    humi = 0.0;
     am2320.begin();
-  Serial.println("-->[AM2320]  Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
+  }
+  if (isnan(temp))
+    temp = 0.0;
+  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
 }
 
 void humidityLoop(){
