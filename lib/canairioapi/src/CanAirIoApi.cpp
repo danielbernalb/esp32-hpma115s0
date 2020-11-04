@@ -34,7 +34,7 @@ void CanAirIoApi::authorize(const char username[], const char password[])
     if(dev)Serial.println("-->[API] user:"+String(_username)+" pass:"+String(_password));
 }
 
-bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float humS, float tmpS, float lat, float lon, float alt, float spd, int stime, int tstp)
+bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float lat, float lon, float alt, float spd, int stime, int tstp)
 {   
     HTTPClient http;
     char uri[32];
@@ -70,8 +70,6 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     fields["pm10"] = (int) pm10;
     fields["hum"] = serialized(String(hum));
     fields["tmp"] = serialized(String(tmp));
-    fields["humS"] = serialized(String(humS));
-    fields["tmpS"] = serialized(String(tmpS));
     fields["lat"] = serialized(String(lat,5));
     fields["lon"] = serialized(String(lon,5));
     fields["alt"] = serialized(String(alt));

@@ -305,7 +305,7 @@ void averageLoop(){
     cfg.lat = apm251;   // PM2.5 PMSA003
     cfg.lon = apm252;   // PM2.5 PANASONIC
     cfg.alt = apm254;   // PM2.5 SPS30
-    cfg.spd = apm254f;
+    cfg.spd = apm254f;  // PM2.5float SPS30
   }
 }
 
@@ -677,13 +677,13 @@ void apiLoop() {
   if (v25.size()==0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
-    bool status = api.write(0,apm25,apm10,humi,temp,humiS,tempS,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
+    bool status = api.write(0,apm25,apm10,humi,humiS,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
     int code = api.getResponse();
     if(status) {
       Serial.println("done. ["+String(code)+"]");
       statusOn(bit_cloud);
       dataSendToggle = true;
-      //
+    /*
       Serial.print("    Data stored: ");
       Serial.print(apm25);
       Serial.print(" ");
@@ -696,7 +696,7 @@ void apiLoop() {
       Serial.print(cfg.alt);
       Serial.print(" ");
       Serial.println(cfg.spd);    
-      //
+    */
     }
     else {
       Serial.println("fail! ["+String(code)+"]");
