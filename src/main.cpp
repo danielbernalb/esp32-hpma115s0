@@ -58,8 +58,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13  // config for TTGO_TQ board
 #define HPMA_TX 18
 #else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
+#define HPMA_RX 17 // Pin2 SPS30
+#define HPMA_TX 16 // Pin3 SPS30
 #endif
 
 #define pin_rx1 18 // Honeywell
@@ -68,7 +68,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define pin_tx2 12 // NA
 #define pin_rx3 23 // PMS7003
 #define pin_tx3 32 // NA
-#define pin_rx4 5 // Panasonic !!!!!!!!!!!
+#define pin_rx4 5  // Panasonic !!!!!!!!!!!
 #define pin_tx4 25
 
 SoftwareSerial Device1(pin_rx1, pin_tx1);
