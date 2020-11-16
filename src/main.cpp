@@ -43,7 +43,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DevKit // display via i2c for ESP32-DevKitC - U series
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, OLEDclockd, OLEDdatad, U8X8_PIN_NONE);
 #elif ESP32S // display via i2c for ESP32S
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, OLEDclock, OLEDdata, U8X8_PIN_NONE);
+U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
@@ -60,8 +60,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX PINRXSENd  // config for ESP32DevKit
 #define HPMA_TX PINTXSENd
 #elif ESP32S
-#define HPMA_RX PINRXSEN  // config for ESP32S
-#define HPMA_TX PINTXSEN
+#define HPMA_RX 17  // config for D1MIN1 board
+#define HPMA_TX 16
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
 #define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
@@ -441,8 +441,7 @@ void humTempInit(){
   }
   Serial.println("AHT10 found");
  #else
-   //Wire.begin(16,21);   //I2C_SDA, I2C_SCL
-   Wire.begin(HUMSDA,HUMSCL);   //I2C_SDA, I2C_SCL
+   am2320.begin();   //I2C_SDA, I2C_SCL
  #endif
 #else
  #ifdef BME280S
