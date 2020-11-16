@@ -32,7 +32,7 @@ void startingSensors() {
     sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
-    sensors.init(cfg.getSensorType());            // start all sensors and
+    sensors.init(sensors.Auto);                  // start all sensors and
                                                   // try to detect configured PM sensor.
                                                   // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion
                                                   // The configured sensor is choosed on Android app.
