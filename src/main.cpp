@@ -26,6 +26,7 @@
 #include <Adafruit_BME280.h>
 #include <Adafruit_AHTX0.h>
 #include <DHT.h>
+#include <MHZ19.h>
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
@@ -134,7 +135,7 @@ void sensorInit(){
   }
   delay(100);
   #endif
-#else //SENSIRION
+#elif SENSIRION
 // Begin communication channel
  SP30_COMMS1.begin(115200, SERIAL_8N1, HPMA_RX, HPMA_TX);
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
@@ -160,6 +161,16 @@ void sensorInit(){
     if (sps30.I2C_expect() == 4)
       Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
   }
+#elif MHZ14
+ Serial.println("-->[MHZ14] starting MHZ14 CO2 sensor..");
+  delay(100);
+  MHZ14Serial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  if(WrongSerialData == false){
+    MHZ14Serial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  }
+  myMHZ19.begin(MHZ14Serial);
+  myMHZ19.autoCalibration();                              // Turn auto calibration ON (OFF autoCalibration(false))
+  delay(100);
 #endif
 }
 
@@ -232,7 +243,36 @@ void showValues(int pm25, int pm10){
  **/
 
 void sensorLoop(){
+
+#ifdef MHZ14
+  int CO2; 
+
+        /* note: getCO2() default is command "CO2 Unlimited". This returns the correct CO2 reading even 
+        if below background CO2 levels or above range (useful to validate sensor). You can use the 
+        usual documented command with getCO2(false) */
+
+        CO2 = myMHZ19.getCO2();                             // Request CO2 (as ppm)
+        
+        Serial.print("CO2 (ppm): ");                      
+        Serial.println(CO2);                                
+
+        pm10 = myMHZ19.getTemperature();                     // Request Temperature (as Celsius)
+        Serial.print("Temperature (C): ");                  
+        Serial.println(pm10); 
+
+      Serial.print("-->[MHZ14] read > done!");
+      statusOn(bit_sensor);
+      pm25 = CO2;
+      
+      if (pm25 < 10000 && pm10 < 100){
+        showValues(pm25, pm10);
+      }
+
+
+#endif
+
 #ifndef SENSIRION
+#ifndef MHZ14
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY){
@@ -243,11 +283,11 @@ void sensorLoop(){
       Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
 #else
       Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
-#endif 
+#endif
     }
 #ifdef HONEYWELL
     Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
-#else
+#elif PANASONIC
     Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
 #endif
   }
@@ -262,6 +302,7 @@ void sensorLoop(){
 #endif
     delay(500); // waiting for sensor..
   }
+#endif
 #endif
 
 #ifdef PANASONIC
@@ -298,7 +339,7 @@ void sensorLoop(){
   else
     wrongDataState();
 
-#else // SENSIRION
+#elif SENSIRION
   delay(35); //Delay for sincronization
   do {
     ret = sps30.GetValues(&val);

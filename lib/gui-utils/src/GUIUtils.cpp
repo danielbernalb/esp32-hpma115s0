@@ -178,7 +178,7 @@ void GUIUtils::displaySensorAverage(int average)
   }
 #endif
 #else
-  if (average < 13)
+  if (average < 401)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
@@ -190,7 +190,7 @@ void GUIUtils::displaySensorAverage(int average)
     displayBigLabel(0, " green");
 #endif
   }
-  else if (average < 36)
+  else if (average < 801)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
@@ -202,7 +202,7 @@ void GUIUtils::displaySensorAverage(int average)
     displayBigLabel(0, "yellow");
 #endif
   }
-  else if (average < 56)
+  else if (average < 1201)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
@@ -210,11 +210,11 @@ void GUIUtils::displaySensorAverage(int average)
     displayBigLabel(84, "/oran");
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
-    displayBigEmoticon("UNH SEN");
-    displayBigLabel(0, "orange");
+    displayBigEmoticon("UNHEALT");
+    displayBigLabel(0, "  red");
 #endif
   }
-  else if (average < 151)
+  else if (average < 1601)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
@@ -222,11 +222,11 @@ void GUIUtils::displaySensorAverage(int average)
     displayBigLabel(84, "/red"); //OK
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
-    displayBigEmoticon("UNHEALT");
-    displayBigLabel(0, "  red");
+    displayBigEmoticon("V UNHEA");
+    displayBigLabel(0, "violet");
 #endif
   }
-  else if (average < 251)
+  else if (average < 2001)
   {
 #ifdef TTGO_TQ
     u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
@@ -234,8 +234,8 @@ void GUIUtils::displaySensorAverage(int average)
     displayBigLabel(84, "/viol"); //OK
 #else
     u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
-    displayBigEmoticon("V UNHEA");
-    displayBigLabel(0, "violet");
+    displayBigEmoticon("HAZARD");
+    displayBigLabel(0, " brown");
 #endif
   }
   else
@@ -252,7 +252,8 @@ void GUIUtils::displaySensorAverage(int average)
   }
 #endif
   char output[4];
-  sprintf(output, "%03d", average);
+  sprintf(output, "%04d", average);
+  //sprintf(output, "%03d", average);
   displayCenterBig(output);
 }
 
@@ -266,7 +267,8 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   char output[22];
   inthumi = (int)humi;
   inttemp = (int)temp;
-  sprintf(output, "%03d E%02d H%02d%% T%02d%°C", pm25, ecode, inthumi, inttemp); // 000 E00 H00% T00°C
+  sprintf(output, "%04d E%02d H%02d%% T%02d%", pm25, ecode, inthumi, inttemp); // 000 E00 H00% T00°C
+  //sprintf(output, "%04d T%02d%°C E%02d H%02d%% T%02d%°C", pm25, pm10, ecode, inthumi, inttemp); // 0000 E00 H00% T00°C
   displayBottomLine(String(output));
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
@@ -303,15 +305,27 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   Serial.print(chargeLevel);
   Serial.print("%");
 #else
+#ifdef MHZ14
+  Serial.print(" CO2:");
+#else
   Serial.print(" PM2.5:");
+#endif
   Serial.print(output);
+  Serial.print("°C Ts:");
+  Serial.print(pm10);
+  Serial.print("°C");
 #endif  
 #ifdef EMOTICONS
  #ifndef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(51, 0);
-  sprintf(output, "%03d", pm25);
+  sprintf(output, "%04d", pm25);
+  //sprintf(output, "%04d", pm25);
   u8g2.print(output);
+  u8g2.setCursor(65, 58);
+  u8g2.print("oC Tc: ");
+  u8g2.print(pm10);
+  u8g2.print("oC");
  #endif
 #endif
   u8g2.setFont(u8g2_font_6x12_tf);

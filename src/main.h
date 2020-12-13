@@ -1,7 +1,11 @@
 using namespace std;
 
+#ifndef MHZ14
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
+#else
+HardwareSerial MHZ14Serial(1);
+#endif
 
 vector<unsigned int> v25;      // for average
 vector<unsigned int> v10;      // for average
@@ -38,6 +42,11 @@ float temp = 0.0;              // Temperature (°C)
  //Adafruit_Sensor *aht_humidity, *aht_temp;
 #else
  Adafruit_AM2320 am2320 = Adafruit_AM2320();
+#endif
+
+//MHZ14
+#ifdef MHZ14
+MHZ19 myMHZ19;
 #endif
 
 // Battery level
