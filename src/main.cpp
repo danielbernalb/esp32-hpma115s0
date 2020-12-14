@@ -925,7 +925,7 @@ void setup(){
 #ifdef MHZ14
   gui.welcomeAddMessage("PREHEAT timer 180 seconds:");
   Serial.print("Preheat timer 180 seconds:");
-   for (resetvar=0; resetvar<=180; resetvar++) {
+   for (resetvar=0; resetvar<=181; resetvar++) {
     delay(1000);
     gui.welcomeAddMessage(String(resetvar));
     Serial.println(resetvar);
