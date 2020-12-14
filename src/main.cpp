@@ -246,29 +246,14 @@ void sensorLoop(){
 
 #ifdef MHZ14
   int CO2; 
-
-        /* note: getCO2() default is command "CO2 Unlimited". This returns the correct CO2 reading even 
-        if below background CO2 levels or above range (useful to validate sensor). You can use the 
-        usual documented command with getCO2(false) */
-
-        CO2 = myMHZ19.getCO2();                             // Request CO2 (as ppm)
-        
-        Serial.print("CO2 (ppm): ");                      
-        Serial.println(CO2);                                
-
-        pm10 = myMHZ19.getTemperature();                     // Request Temperature (as Celsius)
-        Serial.print("Temperature (C): ");                  
-        Serial.println(pm10); 
-
-      Serial.print("-->[MHZ14] read > done!");
-      statusOn(bit_sensor);
-      pm25 = CO2;
-      
-      if (pm25 < 10000 && pm10 < 100){
+  CO2 = myMHZ19.getCO2();                             // Request CO2 (as ppm)
+  pm10 = myMHZ19.getTemperature();                     // Request Temperature (as Celsius)
+  Serial.print("-->[MHZ14] read > done!");
+  statusOn(bit_sensor);
+  pm25 = CO2;
+    if (pm25 < 10000 && pm10 < 100){
         showValues(pm25, pm10);
-      }
-
-
+  }
 #endif
 
 #ifndef SENSIRION

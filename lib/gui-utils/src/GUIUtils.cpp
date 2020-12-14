@@ -322,10 +322,10 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   sprintf(output, "%04d", pm25);
   //sprintf(output, "%04d", pm25);
   u8g2.print(output);
-  u8g2.setCursor(65, 58);
-  u8g2.print("oC Tc: ");
+  u8g2.setCursor(69, 50);
+  u8g2.print("'C Tc:");
   u8g2.print(pm10);
-  u8g2.print("oC");
+  u8g2.print("'C");
  #endif
 #endif
   u8g2.setFont(u8g2_font_6x12_tf);
