@@ -61,9 +61,15 @@ void GUIUtils::welcomeAddMessage(String msg)
     lastDrawedLine = lastDrawedLine + 7;
     u8g2.sendBuffer();
   }
-#else
+#else 
+  if (lastDrawedLine < 52) {
   u8g2.drawStr(0, lastDrawedLine, msg.c_str());
   lastDrawedLine = lastDrawedLine + 7;
+  }
+  else {
+    u8g2.setFont(u8g2_font_6x10_tf);
+    u8g2.drawStr(0, 55, msg.c_str());
+  }
   u8g2.sendBuffer();
 #endif
 }
@@ -85,9 +91,12 @@ void GUIUtils::displayCenterBig(String msg)
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #else
-  u8g2.setCursor(36, 6);
+  u8g2.setCursor(40, 6);
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
+  u8g2.setCursor(74, 10);
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.print(" ppm");
 #endif
 #endif
 }

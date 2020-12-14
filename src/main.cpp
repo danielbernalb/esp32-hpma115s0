@@ -864,7 +864,7 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-        if (resetvar == 1799) {      
+        if (resetvar == 43199) {        // 12 horas RESET
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
@@ -922,6 +922,16 @@ void setup(){
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
   delay(500);
+#ifdef MHZ14
+  gui.welcomeAddMessage("PREHEAT timer 180 seconds:");
+  Serial.print("Preheat timer 180 seconds:");
+   for (resetvar=0; resetvar<=180; resetvar++) {
+    delay(1000);
+    gui.welcomeAddMessage(String(resetvar));
+    Serial.println(resetvar);
+    timerWrite(timer, 0);  //reset timer (feed watchdog)
+   }
+#endif
 }
 
 void loop(){
