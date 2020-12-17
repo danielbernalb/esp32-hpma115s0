@@ -174,30 +174,22 @@ void sensorInit(){
   delay(100);
 
 #elif SCD30co2
-
-  if (airSensor.begin() == false)
-  {
+  if (airSensor.begin() == false) {
     Serial.println("Air sensor not detected. Please check wiring. Freezing...");
     while (1)
       ;
   }
-
   airSensor.setMeasurementInterval(2); //Change number of seconds between measurements: 2 to 1800 (30 minutes)
-
   //My desk is ~1600m above sealevel
   airSensor.setAltitudeCompensation(2600); //Set altitude of the sensor in m
-
   //Pressure in Boulder, CO is 24.65inHg or 834.74mBar
   airSensor.setAmbientPressure(1012); //Current ambient pressure in mBar: 700 to 1200
-
   float offset = airSensor.getTemperatureOffset();
   Serial.print("Current temp offset: ");
   Serial.print(offset, 2);
   Serial.println("C");
-
   //airSensor.setTemperatureOffset(5); //Optionally we can set temperature offset to 5°C
 #endif
-
 }
 
 void wrongDataState(){
@@ -283,23 +275,21 @@ void sensorLoop(){
 #endif
 
 #ifdef SCD30co2
-if (airSensor.dataAvailable())
-  {
+  if (airSensor.dataAvailable()) {
     pm25 = airSensor.getCO2();
     temp = airSensor.getTemperature();
     humi = airSensor.getHumidity();
     pm10 = temp;
-  Serial.print("-->[SCD30] read > done!");
-  statusOn(bit_sensor);
-  
+   Serial.print("-->[SCD30] read > done!");
+   statusOn(bit_sensor);
     if (pm25 < 10000 && pm10 < 100){
         showValues(pm25, pm10);
+    }
   }
-
+  else {
+    Serial.print("-->[SCD30] read > error!");
+    showValues(pm25, pm10);
   }
-  else
-    Serial.print(".");
-
 #endif
 
 #ifndef SENSIRION
@@ -464,7 +454,7 @@ void getHumidityRead() {
   sensors_event_t humidity, temp;
   aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
   Serial.println("-->[AHT10] Humidity: "+String(humidity.relative_humidity)+" % Temp: "+String(temp.temperature)+" °C");
- #else
+ #elif AM2320
   humi = am2320.readHumidity();
   temp = am2320.readTemperature();
   if (isnan(humi)){
@@ -474,12 +464,16 @@ void getHumidityRead() {
   if (isnan(temp))
     temp = 0.0;
   Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+ #elif SCD30co2
+    temp = airSensor.getTemperature();
+    humi = airSensor.getHumidity();
+    Serial.println("-->[SCD30] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
  #endif 
 }
 
 void humidityLoop(){
   if (v25.size() == 0){
-//    getHumidityRead();
+    getHumidityRead();
   }
 }
 
