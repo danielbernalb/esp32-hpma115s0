@@ -49,6 +49,9 @@ float temp = 0.0;              // Temperature (°C)
 MHZ19 myMHZ19;
 #endif
 
+//SDC30
+SCD30 airSensor;
+
 // Battery level
 unsigned int chargeLevel = 0;
 #ifdef TTGO_TQ

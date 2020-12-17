@@ -27,6 +27,7 @@
 #include <Adafruit_AHTX0.h>
 #include <DHT.h>
 #include <MHZ19.h>
+#include <SparkFun_SCD30_Arduino_Library.h>
 #include <GUIUtils.hpp>
 #include <vector>
 #include <sps30.h>
@@ -171,7 +172,32 @@ void sensorInit(){
   myMHZ19.begin(MHZ14Serial);
   myMHZ19.autoCalibration();                              // Turn auto calibration ON (OFF autoCalibration(false))
   delay(100);
+
+#elif SCD30co2
+
+  if (airSensor.begin() == false)
+  {
+    Serial.println("Air sensor not detected. Please check wiring. Freezing...");
+    while (1)
+      ;
+  }
+
+  airSensor.setMeasurementInterval(2); //Change number of seconds between measurements: 2 to 1800 (30 minutes)
+
+  //My desk is ~1600m above sealevel
+  airSensor.setAltitudeCompensation(2600); //Set altitude of the sensor in m
+
+  //Pressure in Boulder, CO is 24.65inHg or 834.74mBar
+  airSensor.setAmbientPressure(1012); //Current ambient pressure in mBar: 700 to 1200
+
+  float offset = airSensor.getTemperatureOffset();
+  Serial.print("Current temp offset: ");
+  Serial.print(offset, 2);
+  Serial.println("C");
+
+  //airSensor.setTemperatureOffset(5); //Optionally we can set temperature offset to 5°C
 #endif
+
 }
 
 void wrongDataState(){
@@ -256,8 +282,29 @@ void sensorLoop(){
   }
 #endif
 
+#ifdef SCD30co2
+if (airSensor.dataAvailable())
+  {
+    pm25 = airSensor.getCO2();
+    temp = airSensor.getTemperature();
+    humi = airSensor.getHumidity();
+    pm10 = temp;
+  Serial.print("-->[SCD30] read > done!");
+  statusOn(bit_sensor);
+  
+    if (pm25 < 10000 && pm10 < 100){
+        showValues(pm25, pm10);
+  }
+
+  }
+  else
+    Serial.print(".");
+
+#endif
+
 #ifndef SENSIRION
 #ifndef MHZ14
+#ifndef SCD30co2
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY){
@@ -287,6 +334,7 @@ void sensorLoop(){
 #endif
     delay(500); // waiting for sensor..
   }
+#endif
 #endif
 #endif
 
@@ -431,7 +479,7 @@ void getHumidityRead() {
 
 void humidityLoop(){
   if (v25.size() == 0){
-    getHumidityRead();
+//    getHumidityRead();
   }
 }
 
@@ -952,7 +1000,7 @@ void loop(){
 #elif PANASONIC
   delay(500);
 #else
-  delay(900);
+  delay(2000);
 #endif
   timerWrite(timer, 0);  //reset timer (feed watchdog)
   resetLoop();     // reset every 20 minutes with Wifion

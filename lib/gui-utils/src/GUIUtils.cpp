@@ -316,6 +316,8 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 #else
 #ifdef MHZ14
   Serial.print(" CO2:");
+#elif SCD30co2
+  Serial.print(" CO2:");
 #else
   Serial.print(" PM2.5:");
 #endif
