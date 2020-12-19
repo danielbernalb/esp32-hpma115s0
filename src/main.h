@@ -47,6 +47,7 @@ float temp = 0.0;              // Temperature (°C)
 //MHZ14
 #ifdef MHZ14
 MHZ19 myMHZ19;
+#define ledPin 32
 #endif
 
 // Battery level

@@ -863,13 +863,15 @@ void bleLoop(){
 ******************************************************************************/
 
 void resetLoop(){
-  if (wifiOn){    
-        if (resetvar == 43199) {        // 12 horas RESET
+        if (resetvar == 299) {        // 5min calibrate
         resetvar = 0;
-        delay(45000);   // 45 seconds, reset at 30 seconds
+        digitalWrite(ledPin, LOW);
+        Serial.println("Calibration pulse 10 seconds");
+        delay(10000);
+        digitalWrite(ledPin, HIGH);
     }
     resetvar = resetvar + 1;
-  }
+    Serial.println(resetvar);
 }
 
 /******************************************************************************
@@ -901,6 +903,10 @@ void setup(){
 #endif
   pinMode(21, INPUT_PULLUP);
   pinMode(22, INPUT_PULLUP);
+
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, HIGH);
+
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
@@ -932,6 +938,7 @@ void setup(){
     timerWrite(timer, 0);  //reset timer (feed watchdog)
    }
 #endif
+    resetvar = 0 ;
 }
 
 void loop(){
