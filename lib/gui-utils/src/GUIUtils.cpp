@@ -92,9 +92,9 @@ void GUIUtils::displayCenterBig(String msg)
   u8g2.print(msg.c_str());
 #else
 //  u8g2.setCursor(37, 8);  //////////////////////////////////// 33 8
-  u8g2.setCursor(33, 8);
-//  u8g2.setFont(u8g2_font_7x13B_tf);
-  u8g2.setFont(u8g2_font_8x13B_tf);
+  u8g2.setCursor(37, 8);
+//  u8g2.setFont(u8g2_font_8x13B_tf);
+  u8g2.setFont(u8g2_font_7x13B_tf);
   u8g2.print(msg.c_str());
   u8g2.setCursor(74, 10);
   u8g2.setFont(u8g2_font_6x10_tf);
