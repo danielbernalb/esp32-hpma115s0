@@ -91,8 +91,8 @@ void GUIUtils::displayCenterBig(String msg)
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #else
-  u8g2.setCursor(40, 6);
-  u8g2.setFont(u8g2_font_9x18B_tf);
+  u8g2.setCursor(37, 8);
+  u8g2.setFont(u8g2_font_7x13B_tf);
   u8g2.print(msg.c_str());
   u8g2.setCursor(74, 10);
   u8g2.setFont(u8g2_font_6x10_tf);
@@ -327,10 +327,11 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 #ifdef EMOTICONS
  #ifndef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(51, 0);
+  u8g2.setCursor(33, 0);
   sprintf(output, "%04d", pm25);
   //sprintf(output, "%04d", pm25);
   u8g2.print(output);
+  u8g2.print(" ppm");
   u8g2.setCursor(69, 50);
   u8g2.print("'C Tc:");
   u8g2.print(pm10);
