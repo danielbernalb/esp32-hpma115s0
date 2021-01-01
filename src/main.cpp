@@ -171,7 +171,12 @@ void sensorInit(){
   myMHZ19.begin(MHZ14Serial);
   myMHZ19.autoCalibration();                              // Turn auto calibration ON (OFF autoCalibration(false))
   delay(100);
+#elif CM1106
+  Serial.println("-->[CM1106] starting CM1106 CO2 sensor..");
+  delay(100);
+  co2cm1106.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
 #endif
+
 }
 
 void wrongDataState(){
@@ -254,10 +259,21 @@ void sensorLoop(){
     if (pm25 < 10000 && pm10 < 100){
         showValues(pm25, pm10);
   }
+#elif CM1106
+  int CO2;
+  CO2 = CO2CM1106val();
+  Serial.print("-->[CM1106] read > done!");
+  statusOn(bit_sensor);
+  pm25 = CO2;
+  pm10 = 0;
+    if (pm25 < 10000 && pm10 < 100){
+        showValues(pm25, pm10);
+  }
 #endif
 
 #ifndef SENSIRION
 #ifndef MHZ14
+#ifndef CM1106
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY){
@@ -287,6 +303,7 @@ void sensorLoop(){
 #endif
     delay(500); // waiting for sensor..
   }
+#endif
 #endif
 #endif
 
@@ -353,6 +370,24 @@ void sensorLoop(){
   else
     wrongDataState();
 #endif
+}
+
+int CO2CM1106val() {
+  static byte cmd[4] = {0x11, 0x01, 0x01, 0xED}; // Commands 0x01 Read ppm, 0x10 open/close ABC, 0x03 Calibrate 
+  static byte response[8] = {0};                 // response 0x16, 0x05, 0x01, DF1, DF2, DF3, DF4, CRC.  ppm=DF1*256+DF2
+  co2cm1106.write(cmd, 4);
+  co2cm1106.readBytes(response, 8);
+  int crc = 0;
+  for (int i = 0; i < 7; i++) crc += response[i];
+  crc = 256 - crc%256;
+  if (((int) response[0] == 0x16) && ((int)response[7] == crc)) {
+    unsigned int responseHigh = (unsigned int) response[3];
+    unsigned int responseLow = (unsigned int) response[4];
+    return (256 * responseHigh) + responseLow;
+  } else {
+    while(co2cm1106.available() > 0)  char t = co2cm1106.read();  // Clear serial input buffer;
+    return -1; 
+  }
 }
 
 void statusLoop(){
@@ -456,7 +491,8 @@ void humTempInit(){
 #elif ESP32S
  #ifdef BME280S
    //Wire.begin(16, 21);   //I2C_SDA, I2C_SCL
-   bme.begin(0x76, 16, 21);
+   //bme.begin(0x76, 16, 21);
+   bme.begin(0x76);
  #elif DHT22S
    dht.begin();
  #elif AHT10

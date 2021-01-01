@@ -1,10 +1,12 @@
 using namespace std;
 
-#ifndef MHZ14
+#ifdef MHZ14
+HardwareSerial MHZ14Serial(1);
+#elif CM1106
+HardwareSerial co2cm1106(1);
+#else
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
-#else
-HardwareSerial MHZ14Serial(1);
 #endif
 
 vector<unsigned int> v25;      // for average
@@ -110,6 +112,8 @@ unsigned int resetvar = 0;
 #define HUMSDAd 21    // D4
 #define HUMSCLd 3    // D3
 
+
+int CO2CM1106val();
 
 // some prototypes
 bool wifiCheck();
