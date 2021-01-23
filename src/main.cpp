@@ -174,23 +174,24 @@ void sensorInit(){
   delay(100);
 
 #elif SCD30co2
-  if (airSensor.begin() == false) {
-    Serial.println("Air sensor not detected. Please check wiring. Freezing...");
-    while (1)
-      ;
-  }
+  if (airSensor.begin(Wire, false) == false)
+    {   Serial.println("Air sensor not detected. Please check wiring. Freezing...");
+        while (1);
+    }
+
+   Serial.print("Auto calibration set to ");
+    if (airSensor.getAutoSelfCalibration() == true)
+        Serial.println("true");
+    else
+        Serial.println("false");
+
+  airSensor.setTemperatureOffset((float) 0);    // set for x degrees Temperature offset
+  airSensor.setAmbientPressure(751); //Current ambient pressure in mBar: 700 to 1200
   airSensor.setMeasurementInterval(2); //Change number of seconds between measurements: 2 to 1800 (30 minutes)
-  //My desk is ~1600m above sealevel
-  airSensor.setAltitudeCompensation(2600); //Set altitude of the sensor in m
-  //Pressure in Boulder, CO is 24.65inHg or 834.74mBar
-  airSensor.setAmbientPressure(1012); //Current ambient pressure in mBar: 700 to 1200
-  float offset = airSensor.getTemperatureOffset();
-  Serial.print("Current temp offset: ");
-  Serial.print(offset, 2);
-  Serial.println("C");
-  //airSensor.setTemperatureOffset(5); //Optionally we can set temperature offset to 5°C
 #endif
 }
+
+
 
 void wrongDataState(){
   setErrorCode(ecode_sensor_read_fail);
