@@ -29,8 +29,8 @@ float temp = 0.0;              // Temperature (°C)
  #define SEALEVELPRESSURE_HPA (1013.25)
  Adafruit_BME280 bme;           // BME280 I2C
 #elif DHT22S
- #define DHTTYPE DHT22         // DHT22 & DHT21
- #define DHTPIN 13              // Pin13 Lima Peru
+ #define DHTTYPE DHT21         // DHT22 & DHT21
+ #define DHTPIN 5              // Pin13 Lima Peru
  DHT dht(DHTPIN, DHTTYPE);
 #elif AHT10
  TwoWire I2CBME = TwoWire(0);
