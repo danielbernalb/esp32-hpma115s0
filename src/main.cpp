@@ -372,6 +372,7 @@ void sensorLoop(){
 #endif
 }
 
+#ifdef CM1106
 int CO2CM1106val() {
   static byte cmd[4] = {0x11, 0x01, 0x01, 0xED}; // Commands 0x01 Read ppm, 0x10 open/close ABC, 0x03 Calibrate 
   static byte response[8] = {0};                 // response 0x16, 0x05, 0x01, DF1, DF2, DF3, DF4, CRC.  ppm=DF1*256+DF2
@@ -389,6 +390,7 @@ int CO2CM1106val() {
     return -1; 
   }
 }
+#endif
 
 void statusLoop(){
   if (v25.size() == 0) {
