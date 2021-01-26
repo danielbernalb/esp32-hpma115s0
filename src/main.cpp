@@ -175,6 +175,18 @@ void sensorInit(){
   Serial.println("-->[CM1106] starting CM1106 CO2 sensor..");
   delay(100);
   co2cm1106.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  Serial.println("-->[CM1106] Stop Autocalibration");
+  static byte cmd[10] = {0x11, 0x07, 0x10, 0x64, 0x02, 0x07, 0x01, 0x90, 0x64, 0x76}; // Commands 0x01 Read ppm, 0x10 open/close ABC, 0x03 Calibrate 
+  static byte response[4] = {0};                 // response 0x16, 0x05, 0x01, DF1, DF2, DF3, DF4, CRC.  ppm=DF1*256+DF2
+  co2cm1106.write(cmd, 10);
+  co2cm1106.readBytes(response, 4);
+  Serial.print(response[0]);
+  Serial.print(response[1]);
+  Serial.print(response[2]);
+  Serial.println(response[3]);
+  if (response[0x16, 0x01, 0x10, 0xD9]) Serial.println("done");
+    else Serial.println("can´t stop autocalibration");
+
 #endif
 
 }
