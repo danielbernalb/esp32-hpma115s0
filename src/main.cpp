@@ -170,7 +170,7 @@ void sensorInit(){
   }
   myMHZ19.begin(MHZ14Serial);
   myMHZ19.autoCalibration(false);                               // Turn OFF calibration
-  Serial.print("ABC Status: "); myMHZ19.getABC() ? Serial.println("ON") :  Serial.println("OFF");  // now print it's status
+  Serial.print("-->[MHZ14] Autocalibration: "); myMHZ19.getABC() ? Serial.println("ON") :  Serial.println("OFF");  // now print it's status
   delay(100);
 #endif
 }
