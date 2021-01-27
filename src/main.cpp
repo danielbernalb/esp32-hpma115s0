@@ -175,8 +175,18 @@ void sensorInit(){
 
 #elif SCD30co2
   if (airSensor.begin(Wire, false) == false)
-    {   Serial.println("Air sensor not detected. Please check wiring. Freezing...");
-        while (1);
+    {   Serial.println("Air sensor not detected1");
+        delay(100);
+    }
+
+if (airSensor.begin(Wire, false) == false)
+    {   Serial.println("Air sensor not detected2");
+        delay(100);
+    }
+
+if (airSensor.begin(Wire, false) == false)
+    {   Serial.println("Air sensor not detected3");
+        delay(100);
     }
 
    Serial.print("Auto calibration set to ");
