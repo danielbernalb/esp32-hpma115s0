@@ -249,11 +249,11 @@ void sensorLoop(){
   int CO2; 
   CO2 = myMHZ19.getCO2();                             // Request CO2 (as ppm)
   pm10 = myMHZ19.getTemperature();                     // Request Temperature (as Celsius)
-  Serial.print("-->[MHZ14] read > done!");
   statusOn(bit_sensor);
   pm25 = CO2;
-    if (pm25 < 10000 && pm10 < 100){
-        showValues(pm25, pm10);
+    if (pm25 < 5000 && pm10 < 100){
+        Serial.print("-->[MHZ14] read > done!");
+        showValues(pm25, pm10);        
   }
 #endif
 
