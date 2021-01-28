@@ -196,7 +196,7 @@ if (airSensor.begin(Wire, false) == false)
         Serial.println("false");
 
   airSensor.setTemperatureOffset((float) 0);    // set for x degrees Temperature offset
-  airSensor.setAmbientPressure(751); //Current ambient pressure in mBar: 700 to 1200
+  airSensor.setAmbientPressure(753); //Current ambient pressure in mBar: 700 to 1200
   airSensor.setMeasurementInterval(2); //Change number of seconds between measurements: 2 to 1800 (30 minutes)
 #endif
 }
