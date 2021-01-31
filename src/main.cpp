@@ -300,11 +300,11 @@ void averageLoop(){
     apm254f = accumulate(v254f.begin(), v254f.end(), 0.0) / v254f.size();
     v254f.clear();
 
-    apm25 = apm253;     // PM2.5 HONEYWELL
+    apm25 = apm254;     // PM2.5 SPS30
     apm10 = apm250;     // PM2.5 PMS7003 
     cfg.lat = apm251;   // PM2.5 PMSA003
     cfg.lon = apm252;   // PM2.5 PANASONIC
-    cfg.alt = apm254;   // PM2.5 SPS30
+    cfg.alt = apm253;   // PM2.5 HONEYWELL
     cfg.spd = apm254f;  // PM2.5float SPS30
   }
 }
@@ -983,7 +983,7 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-        if (resetvar == 1199) {      
+        if (resetvar == 3599) {      
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
