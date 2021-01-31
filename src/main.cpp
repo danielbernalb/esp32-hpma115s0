@@ -62,7 +62,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_TX 16 // Pin3 SPS30
 #endif
 
-#define pin_rx1 18 // Honeywell
+#define pin_rx1 18 // SDS011
 #define pin_tx1 4  // NA
 #define pin_rx2 19 // PMSA003, checksum mismatch
 #define pin_tx2 12 // NA
@@ -141,8 +141,8 @@ void SensirionInit(){
 }
 
 void sensorInit(){
-  // HONEYWELL
-  Serial.println("-->[HPMA]  starting hpma115S0 sensor..");
+  // SDS011
+  Serial.println("-->[SDS011]  starting sds011 sensor..");
   delay(100);
   Device1.begin(9600);
   //Device1.println();
@@ -211,9 +211,9 @@ void wrongDataState(){
     delay(100);
     break;
 
-  case 3: // HONEYWELL
+  case 3: // SDS011
     Device1.end();
-    Serial.println("-->[E][HPMA] !error reading data!");
+    Serial.println("-->[E][SDS011] !error reading data!");
     delay(100);
     Device1.begin(9600);
     //Device1.println();
@@ -253,7 +253,7 @@ void saveDataForAverage(unsigned int pm25, unsigned int pm10, float pm25f){
     v252.push_back(pm25);
     break;
 
-  case 3: // HONEYWELL
+  case 3: // SDS011
     v253.push_back(pm25);
     break;
 
@@ -300,11 +300,11 @@ void averageLoop(){
     apm254f = accumulate(v254f.begin(), v254f.end(), 0.0) / v254f.size();
     v254f.clear();
 
-    apm25 = apm253;     // PM2.5 HONEYWELL
+    apm25 = apm254;     // PM2.5 SPS30
     apm10 = apm250;     // PM2.5 PMS7003 
     cfg.lat = apm251;   // PM2.5 PMSA003
     cfg.lon = apm252;   // PM2.5 PANASONIC
-    cfg.alt = apm254;   // PM2.5 SPS30
+    cfg.alt = apm253;   // PM2.5 SDS011
     cfg.spd = apm254f;  // PM2.5float SPS30
   }
 }
@@ -436,29 +436,29 @@ void sensorLoop(){
     break;
 
 
-  case 3: // HONEYWELL
+  case 3: // SDS011
     numsensor = numsensor + 1;
-    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY){
+    while (txtMsg.length() < 10 && try_sensor_read++ < SENSOR_RETRY){
       while (Device1.available() > 0){
         char inChar = Device1.read();
         txtMsg += inChar;
-        Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
+        Serial.print("-->[SDS011] read " + String(getLoaderChar()) + "\r");
       }
-      Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
+      Serial.print("-->[SDS011] read " + String(getLoaderChar()) + "\r");
     }
     if (try_sensor_read > SENSOR_RETRY){
       setErrorCode(ecode_sensor_timeout);
-      Serial.println("-->[HPMA] read > fail!");
-      Serial.println("-->[E][HPMA] disconnected ?");
+      Serial.println("-->[SDS011] read > fail!");
+      Serial.println("-->[E][SDS011] disconnected ?");
       delay(500); // waiting for sensor..
     }
 
-    if (txtMsg[0] == 66){
-      if (txtMsg[1] == 77){
-        Serial.print("-->[HPMA115] read > done!");
+    if (txtMsg[0] == 170){
+      if (txtMsg[1] == 192){
+        Serial.print("-->[SDS011] read > done!");
         statusOn(bit_sensor);
-        pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-        pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+        pm25 = (txtMsg[3] * 256 + byte(txtMsg[2])) / 10;
+        pm10 = (txtMsg[5] * 256 + byte(txtMsg[4])) / 10;
         if (pm25 < 1000 && pm10 < 1000){
           showValues(pm25, pm10);
         }
@@ -983,7 +983,7 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-        if (resetvar == 1199) {      
+        if (resetvar == 3599) {      
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
