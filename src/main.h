@@ -18,6 +18,7 @@ unsigned int pm25 = 0;
 unsigned int pm10 = 0;
 bool WrongSerialData = false;
 #define SENSOR_RETRY  1000     // Sensor read retry
+#define BUTTON 0
 
 // Sensirion SPS30 sensor
 #ifdef SENSIRION
