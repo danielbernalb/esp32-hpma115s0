@@ -872,6 +872,32 @@ void resetLoop(){
     resetvar = resetvar + 1;
   }
 }
+void buttonloop(){
+  if (digitalRead(BUTTON) == LOW) {
+      delay (2500);
+      if (digitalRead(BUTTON) == LOW) {
+        delay (2500);
+        if (digitalRead(BUTTON) == LOW) {
+          Serial.print("CALIBRATION:");
+          delay(2000);
+          for (int i = 1200; i > -1; i--) { // loop from 0 to 180
+            //Serial.print(i);
+            delay(1000);                         // wait 1000 ms
+            pm25 = myMHZ19.getCO2();  
+            Serial.print(i);
+            Serial.print(" co2(ppm):");
+            Serial.println(pm25);
+            timerWrite(timer, 0);  //reset timer (feed watchdog)
+          }
+          myMHZ19.calibrate();    // Take a reading which be used as the zero point for 400 ppm 
+          Serial.print("Resetting forced calibration factor to : 400");
+          Serial.println("  done");
+          delay(5000);
+        }
+      }
+    }
+}
+
 
 /******************************************************************************
 *  M A I N
@@ -902,6 +928,7 @@ void setup(){
 #endif
   pinMode(21, INPUT_PULLUP);
   pinMode(22, INPUT_PULLUP);
+  pinMode(BUTTON, INPUT_PULLUP);
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
@@ -926,10 +953,10 @@ void setup(){
 #ifdef MHZ14
   gui.welcomeAddMessage("PREHEAT timer 180 seconds:");
   Serial.print("Preheat timer 180 seconds:");
-   for (resetvar=0; resetvar<=10; resetvar++) {
+   for (int i = 180; i > -1; i--) {
     delay(1000);
-    gui.welcomeAddMessage(String(resetvar));
-    Serial.println(resetvar);
+    gui.welcomeAddMessage(String(i));
+    Serial.println(i);
     timerWrite(timer, 0);  //reset timer (feed watchdog)
    }
 #endif
@@ -941,6 +968,7 @@ void loop(){
   averageLoop();   // calculated of sensor data average
   humidityLoop();  // read AM2320
   batteryloop();   // battery charge status
+  buttonloop();
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   apiLoop();       // CanAir.io API publication
